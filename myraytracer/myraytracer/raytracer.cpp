@@ -85,6 +85,15 @@ void Raytracer::render(Camera& camera, Scene& scene, LightList& light_list, Imag
             
             Ray3D ray;
             // TODO: Convert ray to world space
+            //Ray Direction
+            Vector3D dir = imagePlane - origin;
+            
+            //Convert direction and origin to world-space
+            dir = viewToWorld * dir;
+            origin = viewToWorld * origin;
+            
+            //construct the ray
+            ray = Ray3D(origin,dir);
             
             Color col = shadeRay(ray, scene, light_list);
             image.setColorAtPixel(i, j, col);
