@@ -41,8 +41,10 @@ bool UnitSquare::intersect(Ray3D& ray, const Matrix4x4& worldToModel,
         ray.intersection.t_value = t;
         ray.intersection.point = modelToWorld*p;
         ray.intersection.normal = transNorm(worldToModel, normal);
+        ray.intersection.none = false; // there is an intersection
         return true;
     }
+    //ray.intersection.none = true;
     return false;
 }
 

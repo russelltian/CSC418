@@ -34,8 +34,8 @@ int main(int argc, char* argv[])
     //int height = 240;
     
     //for testing purpose
-    int width = 320;
-    int height = 240;
+    int width = 200;
+    int height = 200;
     
     
     if (argc == 3) {
@@ -78,13 +78,13 @@ int main(int argc, char* argv[])
     Camera camera1(Point3D(0, 0, 1), Vector3D(0, 0, -1), Vector3D(0, 1, 0), 60.0);
     Image image1(width, height);
     raytracer.render(camera1, scene, light_list, image1); //render 3D scene to image
-    image1.flushPixelBuffer("/Users/hongyitian/Desktop/grouppro/UFC/view1.bmp"); //save rendered image to file
+    image1.flushPixelBuffer("view1.bmp"); //save rendered image to file
     
     // Render it from a different point of view.
     Camera camera2(Point3D(4, 2, 1), Vector3D(-4, -2, -6), Vector3D(0, 1, 0), 60.0);
     Image image2(width, height);
     raytracer.render(camera2, scene, light_list, image2);
-    image2.flushPixelBuffer("/Users/hongyitian/Desktop/grouppro/UFC/view2.bmp");
+    image2.flushPixelBuffer("view2.bmp");
     
     // Free memory
     for (size_t i = 0; i < scene.size(); ++i) {

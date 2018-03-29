@@ -17,5 +17,6 @@ void PointLight::shade(Ray3D& ray) {
     // It is assumed at this point that the intersection information in ray
     // is available.  So be sure that traverseScene() is called on the ray
     // before this function.
+    ray.col = Color(0.5,0.5,0.5);
     
 }
