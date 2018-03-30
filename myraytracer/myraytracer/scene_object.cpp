@@ -26,11 +26,11 @@ bool UnitSquare::intersect(Ray3D& ray, const Matrix4x4& worldToModel,
     //transform the ray(origin,direction) to object space
     Point3D origin = worldToModel * ray.origin;
     Vector3D direction = worldToModel * ray.dir;
-    
+//    direction.normalize();
     double t = -origin[2]/direction[2];
     
     //invalid intersection
-    if(t < 0 || direction[2] == 0){
+    if(t < 0 || direction[2] == 0||(!ray.intersection.none&&t>ray.intersection.t_value)){
         return false;
     }
     
@@ -41,6 +41,8 @@ bool UnitSquare::intersect(Ray3D& ray, const Matrix4x4& worldToModel,
         ray.intersection.t_value = t;
         ray.intersection.point = modelToWorld*p;
         ray.intersection.normal = transNorm(worldToModel, normal);
+        ray.intersection.normal.normalize();
+        ray.intersection.none=false;
         return true;
     }
     return false;
@@ -57,8 +59,38 @@ bool UnitSphere::intersect(Ray3D& ray, const Matrix4x4& worldToModel,
     //
     // HINT: Remember to first transform the ray into object space
     // to simplify the intersection test.
+    Point3D origin = worldToModel * ray.origin;
+    Vector3D originV(origin[0],origin[1],origin[2]);
+    Vector3D direction = worldToModel * ray.dir;
     
-    return false;
+    direction.normalize();
+    
+    double t;
+    double temp=direction.dot(originV);
+    bool exist=(temp*temp-originV.length()*originV.length()+0.25)>0;
+//    std::cout<<exist<<std::endl;
+    t=-temp-sqrt(temp*temp-originV.length()*originV.length()+0.25);
+    
+    //invalid intersection
+    if(!exist||t < 0 || direction[2] == 0||(!ray.intersection.none&&t>ray.intersection.t_value)){
+        return false;
+    }
+    
+    Point3D p = origin + t*direction;
+    Vector3D normal = Vector3D(p[0],p[1],p[2]);
+    
+    
+    
+//    if(normal.length()<0.55&&normal.length()>0.45){
+        normal.normalize();
+        ray.intersection.t_value = t;
+        ray.intersection.point = modelToWorld*p;
+        ray.intersection.normal = transNorm(worldToModel, normal);
+        ray.intersection.normal.normalize();
+        ray.intersection.none=false;
+        return true;
+//    }
+//    return false;
 }
 
 void SceneNode::rotate(char axis, double angle) {
