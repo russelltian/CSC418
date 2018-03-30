@@ -20,10 +20,6 @@ void PointLight::shade(Ray3D& ray) {
     
     
    
-    //double ka=0.3;
-    //double kd=0.3;
-    double ks=0.3;
-    double alpha=3.0;
 
     //we need to have incident light, reflect light, and normal vector
     
@@ -53,5 +49,7 @@ void PointLight::shade(Ray3D& ray) {
     Vector3D V=-ray.dir;  //view vector
     Color ref=powf(fmax(ref_ray.dot(V),0.0),specular_term)*specular;
 
-    ray.col=ambient*this->col_ambient+diff*this->col_diffuse+ref;
+    Color out=ambient*this->col_ambient+diff*this->col_diffuse+ref*this->col_specular;
+    out.clamp();
+    ray.col=out;
 }

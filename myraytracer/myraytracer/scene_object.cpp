@@ -67,9 +67,9 @@ bool UnitSphere::intersect(Ray3D& ray, const Matrix4x4& worldToModel,
     
     double t;
     double temp=direction.dot(originV);
-    bool exist=(temp*temp-originV.length()*originV.length()+0.25)>0;
+    bool exist=(temp*temp-originV.length()*originV.length()+1)>0;
 //    std::cout<<exist<<std::endl;
-    t=-temp-sqrt(temp*temp-originV.length()*originV.length()+0.25);
+    t=-temp-sqrt(temp*temp-originV.length()*originV.length()+1);
     
     //invalid intersection
     if(!exist||t < 0 || direction[2] == 0||(!ray.intersection.none&&t>ray.intersection.t_value)){
