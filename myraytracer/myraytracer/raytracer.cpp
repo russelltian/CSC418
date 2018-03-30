@@ -88,8 +88,13 @@ void Raytracer::render(Camera& camera, Scene& scene, LightList& light_list, Imag
             //Ray Direction
             Vector3D dir = imagePlane - origin;
             
+            
+            
             //Convert direction and origin to world-space
             dir = viewToWorld * dir;
+            
+            dir.normalize();
+            
             origin = viewToWorld * origin;
             
             //construct the ray
