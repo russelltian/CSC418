@@ -17,6 +17,41 @@ void PointLight::shade(Ray3D& ray) {
     // It is assumed at this point that the intersection information in ray
     // is available.  So be sure that traverseScene() is called on the ray
     // before this function.
-    ray.col = Color(0.5,0.5,0.5);
     
+    
+   
+    //double ka=0.3;
+    //double kd=0.3;
+    double ks=0.3;
+    double alpha=3.0;
+
+    //we need to have incident light, reflect light, and normal vector
+    
+    //incident light
+    Vector3D inci_ray=this->pos-ray.intersection.point;
+    inci_ray.normalize(); //normalization
+    
+    //normalize the normal vector, added by russell, could be deleted
+    Vector3D normal = ray.intersection.normal;
+    normal.normalize();
+    
+    //added by russell , find color term
+    Material* mat = ray.intersection.mat;
+    Color diffuse = mat->diffuse;
+    Color ambient = mat->ambient;
+    Color specular = mat->specular;
+    double specular_term = mat->specular_exp;
+    
+    
+   //calculate diffuse color
+    
+   
+    Color diff=fmax(normal.dot(inci_ray),0.0)*diffuse;
+
+    //TODO: optimization
+    Vector3D ref_ray=2*ray.intersection.normal-inci_ray;
+    Vector3D V=-ray.dir;  //view vector
+    Color ref=powf(fmax(ref_ray.dot(V),0.0),specular_term)*specular;
+
+    ray.col=ambient*this->col_ambient+diff*this->col_diffuse+ref;
 }
