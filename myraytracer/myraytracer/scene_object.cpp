@@ -30,7 +30,7 @@ bool UnitSquare::intersect(Ray3D& ray, const Matrix4x4& worldToModel,
     double t = -origin[2]/direction[2];
     
     //invalid intersection
-    if(t < 0 || direction[2] == 0||(!ray.intersection.none&&t>ray.intersection.t_value)){
+    if(t <= 0.0000001 || direction[2] == 0||(!ray.intersection.none&&t>ray.intersection.t_value)){
         return false;
     }
     
@@ -65,15 +65,19 @@ bool UnitSphere::intersect(Ray3D& ray, const Matrix4x4& worldToModel,
     
     direction.normalize();
     
-    double t;
+    double t,t2;
     double temp=direction.dot(originV);
-    bool exist=(temp*temp-originV.length()*originV.length()+1)>0;
+    bool exist=(temp*temp-originV.length()*originV.length()+1)>=0;
 //    std::cout<<exist<<std::endl;
     t=-temp-sqrt(temp*temp-originV.length()*originV.length()+1);
-    
     //invalid intersection
-    if(!exist||t < 0 || direction[2] == 0||(!ray.intersection.none&&t>ray.intersection.t_value)){
+    
+    
+    
+    if(!exist||(!ray.intersection.none&&t>ray.intersection.t_value)){
         return false;
+    }else if(t<-0.00000001){
+            return false;
     }
     
     Point3D p = origin + t*direction;
@@ -83,7 +87,7 @@ bool UnitSphere::intersect(Ray3D& ray, const Matrix4x4& worldToModel,
     
 //    if(normal.length()<0.55&&normal.length()>0.45){
         normal.normalize();
-        ray.intersection.t_value = t;
+    ray.intersection.t_value = t<0? t2:t;
         ray.intersection.point = modelToWorld*p;
         ray.intersection.normal = transNorm(worldToModel, normal);
         ray.intersection.normal.normalize();

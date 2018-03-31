@@ -34,8 +34,8 @@ int main(int argc, char* argv[])
     //int height = 240;
     
     //for testing purpose
-    int width = 200;
-    int height = 200;
+    int width = 640;
+    int height = 480;
     
     
     if (argc == 3) {

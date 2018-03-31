@@ -20,6 +20,7 @@ void Raytracer::traverseScene(Scene& scene, Ray3D& ray)  {
         if (node->obj->intersect(ray, node->worldToModel, node->modelToWorld)) {
             ray.intersection.mat = node->mat;
         }
+
     }
 }
 
@@ -52,8 +53,30 @@ Color Raytracer::shadeRay(Ray3D& ray, Scene& scene, LightList& light_list) {
     // Don't bother shading if the ray didn't hit
     // anything.
     if (!ray.intersection.none) {
+//        computeShading(ray, light_list);
+//        col = ray.col;
+        
+        Ray3D probe;
+        for (size_t  i = 0; i < light_list.size(); ++i) {
+            LightSource* light = light_list[i];
+            Point3D lightPos=light->get_position();
+            Point3D intersection=ray.intersection.point;
+            Vector3D dir=lightPos-intersection;
+            dir.normalize();
+            probe=Ray3D(intersection, dir);
+            probe.intersection.none=true;
+            traverseScene(scene, probe);
+            if(!probe.intersection.none){
+                break;
+            }
+        }
+        if(probe.intersection.none){
         computeShading(ray, light_list);
         col = ray.col;
+        }else{
+            ray.col=Color(0,0,0);
+            col=ray.col;
+        }
     }
     
     // You'll want to call shadeRay recursively (with a different ray,
