@@ -52,8 +52,13 @@ int main(int argc, char* argv[])
                   12.8);
     
     // Defines a point light source.
-    PointLight* pLight = new PointLight(Point3D(0,0,5), Color(0.9,0.9,0.9));
-    light_list.push_back(pLight);
+    //PointLight* pLight = new PointLight(Point3D(0,0,5), Color(0.9,0.9,0.9));
+    //light_list.push_back(pLight);
+    
+    //added by us, define a extended area light source to make soft shadowing
+    PointLight* aLight = new PointLight(Point3D(0,0,5), Color(0.9,0.9,0.9));
+    light_list.push_back(aLight);
+    
     
     // Add a unit square into the scene with material mat.
     SceneNode* sphere = new SceneNode(new UnitSphere(), &gold);

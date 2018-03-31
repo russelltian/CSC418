@@ -8,7 +8,7 @@
 
 #include <cmath>
 #include "light_source.h"
-
+using namespace std;
 void PointLight::shade(Ray3D& ray) {
     // TODO: implement this function to fill in values for ray.col
     // using phong shading.  Make sure your vectors are normalized, and
@@ -50,5 +50,6 @@ void PointLight::shade(Ray3D& ray) {
     // for example, if light is red, only red should be left
     Color out=ambient*this->col_ambient+diff*this->col_diffuse+ref*this->col_specular;
     out.clamp();
-    ray.col=out;
+    
+    ray.col = ray.col + out;
 }
