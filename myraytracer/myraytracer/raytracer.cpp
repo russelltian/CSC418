@@ -69,14 +69,15 @@ void Raytracer::computeShading(Ray3D& ray, LightList& light_list,Scene& scene) {
 
 //added by us, use bounce to count the number of reflection
 
-Color Raytracer::shadeRay(Ray3D& ray, Scene& scene, LightList& light_list,int bounce) {
+Color Raytracer::shadeRay(Ray3D& ray, Scene& scene, LightList& light_list,int bounce,int count) {
     Color col(0.0, 0.0, 0.0);
     traverseScene(scene, ray);
     
     //if intersection, compute the color at that intersection
     if(!ray.intersection.none ){
         computeShading(ray,light_list,scene);
-        Color scale(0.5,0.5,0.5);
+        double scale_factor = pow((count+1),2);
+        Color scale(1.0/scale_factor,1.0/scale_factor,1.0/scale_factor);
         col = ray.col*scale;
     }
     //if need more reflect and have intersection,
@@ -93,7 +94,7 @@ Color Raytracer::shadeRay(Ray3D& ray, Scene& scene, LightList& light_list,int bo
         second_r = Ray3D(intersect_p,intersect_r); //intersection point is its origin
         bounce--; //one more reflection
         //recursive call
-        col = col + shadeRay(second_r, scene, light_list,bounce);
+        col = col + shadeRay(second_r, scene, light_list,bounce,++count);
     }
     return col;
 }
@@ -145,7 +146,8 @@ void Raytracer::render(Camera& camera, Scene& scene, LightList& light_list, Imag
                 ray = Ray3D(origin,dir);
                 
                 int depth = 1; //define depth to achieve reflection
-                col = col + shadeRay(ray, scene, light_list,depth); //sum up color, include depth
+                int count = 0;
+                col = col + shadeRay(ray, scene, light_list,depth,count); //sum up color, include depth
             }
             Color scale(1.0/num_per_pixel,1.0/num_per_pixel,1.0/num_per_pixel);
             col = col*scale;  //scale the color to find avg color per pixel
