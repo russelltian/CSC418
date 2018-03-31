@@ -47,3 +47,32 @@ class PointLight : public LightSource {
     Color col_specular;
 };
 
+//added by us, extended lightsource to produce softshadow
+
+class ExtendedLight : public LightSource {
+public:
+    // add length and width to make it as a square
+    ExtendedLight(Point3D pos, Color col, Vector3D l, Vector3D w)
+    :
+    pos(pos), col_ambient(col), col_diffuse(col), col_specular(col),
+    length(l),width(w){}
+    
+    ExtendedLight(Point3D pos, Color ambient, Color diffuse, Color specular,Vector3D l, Vector3D w)
+    :
+    pos(pos), col_ambient(ambient), col_diffuse(diffuse), col_specular(specular),
+    length(l),width(w) {}
+    
+    void shade(Ray3D& ray);
+    
+    Point3D get_position() const { return pos; }
+    
+private:
+    Point3D pos;
+    Color col_ambient;
+    Color col_diffuse;
+    Color col_specular;
+    Vector3D length;
+    Vector3D width;
+};
+
+

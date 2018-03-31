@@ -37,54 +37,58 @@ void Raytracer::computeTransforms(Scene& scene) {
     }
 }
 
-void Raytracer::computeShading(Ray3D& ray, LightList& light_list) {
+void Raytracer::computeShading(Ray3D& ray, LightList& light_list,Scene& scene) {
+    
+    Ray3D inter_to_light; //from intersection to light
     for (size_t  i = 0; i < light_list.size(); ++i) {
         LightSource* light = light_list[i];
         
         // Each lightSource provides its own shading function.
         // Implement shadows here if needed.
+        
+        //compute shadows here
+        Point3D lightPos = light->get_position(); // light position
+        Point3D intersection = ray.intersection.point; //intersection position
+        Vector3D dir = lightPos - intersection;     //direction
+        dir.normalize(); //normalization
+        inter_to_light = Ray3D(intersection, dir);
+        
+        traverseScene(scene, inter_to_light);//find intersection
+        
+        //if intersect,compute next light
+        if(!inter_to_light.intersection.none) {
+            continue;
+        }
         light->shade(ray);
     }
+    //TODO: averaging the color if there are multiple light source
+    //note some light source hit, some not, so  need to think
+    //may use a counter
+    //Color scale(1.0/light_list.size(),1.0/light_list.size(),1.0/light_list.size());
+    //ray.col = ray.col * scale;
 }
 
-Color Raytracer::shadeRay(Ray3D& ray, Scene& scene, LightList& light_list) {
+
+//added by us, use bounce to count the number of reflection
+
+Color Raytracer::shadeRay(Ray3D& ray, Scene& scene, LightList& light_list,int bounce
+                          ) {
     Color col(0.0, 0.0, 0.0);
     traverseScene(scene, ray);
     
-    // Don't bother shading if the ray didn't hit
-    // anything.
+    //if it is a second reflection, check intersection, if hit object, reflection
     
-    /*
-    if (!ray.intersection.none) {
-//      computeShading(ray, light_list);
-//        col = ray.col;
-        
-        Ray3D probe;
-
-        for (size_t  i = 0; i < light_list.size(); ++i) {
-            LightSource* light = light_list[i];
-            Point3D lightPos=light->get_position();
-            Point3D intersection=ray.intersection.point;
-            Vector3D dir=lightPos-intersection;
-            dir.normalize();
-            probe=Ray3D(intersection, dir);
-            probe.intersection.none=true;
-            traverseScene(scene, probe);
-            if(!probe.intersection.none){
-                break;
-            }
-        }
-        if(probe.intersection.none){
-        computeShading(ray, light_list);
+    if(!ray.intersection.none ){
+        computeShading(ray,light_list,scene);
         col = ray.col;
-        }else{
-            ray.col=Color(0,0,0);
-            col=ray.col;
-        }
-    }*/
-    // if there is
-    if(!ray.intersection.none){
-        //bounce once
+    }
+   /* if(!ray.intersection.none && bounce == 0){
+        Color scale(0.1,0.1,0.1);
+        col = ray.intersection.mat->diffuse*scale;
+    }
+    */
+    if(bounce > 0 && !ray.intersection.none){
+        //bounce,find intersection
         Point3D intersect_p = ray.intersection.point; // intersection point
         Vector3D intersect_n(ray.intersection.normal);
         intersect_n.normalize(); //normalize
@@ -95,25 +99,10 @@ Color Raytracer::shadeRay(Ray3D& ray, Scene& scene, LightList& light_list) {
         
         Ray3D second_r;
         second_r = Ray3D(intersect_p,intersect_r); //intersection point is its origin
-        traverseScene(scene, second_r);//find secondary intersection
-        if(second_r.intersection.none){
-            //there is no secondary intersection,compute the original light shade
-            computeShading(ray, light_list);
-            col = ray.col;
-        }else{
-            //there is a secondary intersection, so it is in the shadow
-            //we use a mix of light color of first and secondary light
-            computeShading(ray, light_list);
-            computeShading(second_r, light_list);
-            Color scale(0.1,0.1,0.1);
-            col = scale*second_r.col+ray.col;
-            ray.col=col;
-           
-        }
+        bounce--; //one more reflection
+        //recursive call
+        col = col +  shadeRay(second_r, scene, light_list,bounce);
     }
-    
-    // You'll want to call shadeRay recursively (with a different ray,
-    // of course) here to implement reflection/refraction effects.
     
     return col;
 }
@@ -164,8 +153,6 @@ void Raytracer::render(Camera& camera, Scene& scene, LightList& light_list, Imag
                 //Ray Direction
                 Vector3D dir = imagePlane - origin;
                 
-                
-                
                 //Convert direction and origin to world-space
                 dir = viewToWorld * dir;
                 
@@ -175,8 +162,8 @@ void Raytracer::render(Camera& camera, Scene& scene, LightList& light_list, Imag
                 
                 //construct the ray
                 ray = Ray3D(origin,dir);
-              
-                col = col + shadeRay(ray, scene, light_list); // sum up color
+                int dept = 1;
+                col = col + shadeRay(ray, scene, light_list,dept); //sum up color, include depth
             }
             //
             Color scale(1.0/num_per_pixel,1.0/num_per_pixel,1.0/num_per_pixel);
@@ -188,4 +175,32 @@ void Raytracer::render(Camera& camera, Scene& scene, LightList& light_list, Imag
     }
 }
 
+/*
+ if (!ray.intersection.none) {
+ //      computeShading(ray, light_list);
+ //        col = ray.col;
+
+ Ray3D probe;
+ 
+ for (size_t  i = 0; i < light_list.size(); ++i) {
+ LightSource* light = light_list[i];
+ Point3D lightPos=light->get_position();
+ Point3D intersection=ray.intersection.point;
+ Vector3D dir=lightPos-intersection;
+ dir.normalize();
+ probe=Ray3D(intersection, dir);
+ probe.intersection.none=true;
+ traverseScene(scene, probe);
+ if(!probe.intersection.none){
+ break;
+ }
+ }
+ if(probe.intersection.none){
+ computeShading(ray, light_list);
+ col = ray.col;
+ }else{
+ ray.col=Color(0,0,0);
+ col=ray.col;
+ }
+ }*/
 
