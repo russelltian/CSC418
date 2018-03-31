@@ -26,6 +26,12 @@ Point3D::Point3D(const Point3D& other) {
     m_data[2] = other.m_data[2];
 }
 
+Point3D::Point3D(const Vector3D& other){
+    m_data[0] = other[0];
+    m_data[1] = other[1];
+    m_data[2] = other[2];
+}
+
 Point3D& Point3D::operator =(const Point3D& other) {
     m_data[0] = other.m_data[0];
     m_data[1] = other.m_data[1];
