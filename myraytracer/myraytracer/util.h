@@ -15,12 +15,14 @@
 #ifndef M_PI
 #define M_PI    3.14159265358979323846
 #endif
+class Vector3D;
 
 class Point3D {
     public:
     Point3D();
     Point3D(double x, double y, double z);
     Point3D(const Point3D& other);
+    Point3D(const Vector3D& other);
     
     Point3D& operator =(const Point3D& other);
     double& operator[](int i);
@@ -125,9 +127,9 @@ Color operator +(const Color& u, const Color& v);
 std::ostream& operator <<(std::ostream& o, const Color& c);
 
 struct Material {
-    Material(Color ambient, Color diffuse, Color specular, double exp) :
+    Material(Color ambient, Color diffuse, Color specular, double exp,double focu,double alph) :
     ambient(ambient), diffuse(diffuse), specular(specular),
-    specular_exp(exp) {}
+    specular_exp(exp),focal_length(focu),alpha(alph) {}
     
     // Ambient components for Phong shading.
     Color ambient;
@@ -137,6 +139,9 @@ struct Material {
     Color specular;
     // Specular expoent.
     double specular_exp;
+    
+    double focal_length;
+    double alpha;
 };
 
 struct Intersection {

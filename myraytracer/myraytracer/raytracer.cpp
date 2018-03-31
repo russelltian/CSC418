@@ -128,7 +128,7 @@ void Raytracer::render(Camera& camera, Scene& scene, LightList& light_list, Imag
     
     //added by us to do anti-aliasing
     
-    int num_per_pixel = 100; // num of random ray per pixel
+    int num_per_pixel = 1; // num of random ray per pixel
     
     
     // Construct a ray for each pixel.
