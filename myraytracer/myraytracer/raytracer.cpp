@@ -153,7 +153,7 @@ void Raytracer::render(Camera& camera, Scene& scene, LightList& light_list, Imag
                 Point3D imagePlane;
                 //get the random position between 0 and 1
                 double location = rand()/(RAND_MAX + 1.);
-                
+                location = location/num_per_pixel*(k+1);//devide them to different block
                 imagePlane[0] = (-double(image.width)/2 + location + j)/factor;
                 imagePlane[1] = (-double(image.height)/2 + location + i)/factor;
                 imagePlane[2] = -1;
