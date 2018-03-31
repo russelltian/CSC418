@@ -21,7 +21,7 @@ class Raytracer {
     
     // Return the color of the ray after intersection and shading, call
     // this function recursively for reflection and refraction.
-    Color shadeRay(Ray3D& ray, Scene& scene, LightList& light_list,int bounce);
+    Color shadeRay(Ray3D& ray, Scene& scene, LightList& light_list,int bounce,int count);
     
     // Traversal code for the scene, the ray is transformed into
     // the object space of each node where intersection is performed.

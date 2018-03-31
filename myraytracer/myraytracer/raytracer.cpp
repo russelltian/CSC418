@@ -37,14 +37,12 @@ void Raytracer::computeTransforms(Scene& scene) {
     }
 }
 
+//modified computeshading to find shadows
 void Raytracer::computeShading(Ray3D& ray, LightList& light_list,Scene& scene) {
     
     Ray3D inter_to_light; //from intersection to light
     for (size_t  i = 0; i < light_list.size(); ++i) {
         LightSource* light = light_list[i];
-        
-        // Each lightSource provides its own shading function.
-        // Implement shadows here if needed.
         
         //compute shadows here
         Point3D lightPos = light->get_position(); // light position
@@ -71,29 +69,24 @@ void Raytracer::computeShading(Ray3D& ray, LightList& light_list,Scene& scene) {
 
 //added by us, use bounce to count the number of reflection
 
-Color Raytracer::shadeRay(Ray3D& ray, Scene& scene, LightList& light_list,int bounce
-                          ) {
+Color Raytracer::shadeRay(Ray3D& ray, Scene& scene, LightList& light_list,int bounce,int count) {
     Color col(0.0, 0.0, 0.0);
     traverseScene(scene, ray);
     
-    //if it is a second reflection, check intersection, if hit object, reflection
-    
+    //if intersection, compute the color at that intersection
     if(!ray.intersection.none ){
         computeShading(ray,light_list,scene);
-        col = ray.col;
+        double scale_factor = pow((count+1),2);
+        Color scale(1.0/scale_factor,1.0/scale_factor,1.0/scale_factor);
+        col = ray.col*scale;
     }
-   /* if(!ray.intersection.none && bounce == 0){
-        Color scale(0.1,0.1,0.1);
-        col = ray.intersection.mat->diffuse*scale;
-    }
-    */
+    //if need more reflect and have intersection,
+    //define the reflect ray, and recursive call
     if(bounce > 0 && !ray.intersection.none){
-        //bounce,find intersection
+        //define reflect ray
         Point3D intersect_p = ray.intersection.point; // intersection point
         Vector3D intersect_n(ray.intersection.normal);
         intersect_n.normalize(); //normalize
-        
-        //find reflect light
         Vector3D intersect_r = -1*(2*(intersect_n.dot(ray.dir))*intersect_n-ray.dir);
         intersect_r.normalize();
         
@@ -101,9 +94,8 @@ Color Raytracer::shadeRay(Ray3D& ray, Scene& scene, LightList& light_list,int bo
         second_r = Ray3D(intersect_p,intersect_r); //intersection point is its origin
         bounce--; //one more reflection
         //recursive call
-        col = col +  shadeRay(second_r, scene, light_list,bounce);
+        col = col + shadeRay(second_r, scene, light_list,bounce,++count);
     }
-    
     return col;
 }
 
@@ -126,11 +118,6 @@ void Raytracer::render(Camera& camera, Scene& scene, LightList& light_list, Imag
             // Sets up ray origin and direction in view space,
             // image plane is at z = -1.
             
-            // original definition, comment out
-            // imagePlane[0] = (-double(image.width)/2 + 0.5 + j)/factor;
-            // imagePlane[1] = (-double(image.height)/2 + 0.5 + i)/factor;
-            // imagePlane[2] = -1;
-            
             //added by us, compute average pixel value
             //initialize each pixel's color to 0
             //use Jitter Method, with simple random
@@ -149,58 +136,26 @@ void Raytracer::render(Camera& camera, Scene& scene, LightList& light_list, Imag
                 
                 
                 Ray3D ray;
-                // TODO: Convert ray to world space
+                //Convert ray to world space
                 //Ray Direction
                 Vector3D dir = imagePlane - origin;
-                
                 //Convert direction and origin to world-space
                 dir = viewToWorld * dir;
-                
                 dir.normalize();
-                
                 origin = viewToWorld * origin;
-                
                 //construct the ray
                 ray = Ray3D(origin,dir);
-                int dept = 1;
-                col = col + shadeRay(ray, scene, light_list,dept); //sum up color, include depth
+                
+                int depth = 1; //define depth to achieve reflection
+                int count = 0;
+                col = col + shadeRay(ray, scene, light_list,depth,count); //sum up color, include depth
             }
-            //
             Color scale(1.0/num_per_pixel,1.0/num_per_pixel,1.0/num_per_pixel);
-            col = col*scale;  //scale the color to find avg
+            col = col*scale;  //scale the color to find avg color per pixel
+            
             image.setColorAtPixel(i, j, col);
         }
        
         
     }
 }
-
-/*
- if (!ray.intersection.none) {
- //      computeShading(ray, light_list);
- //        col = ray.col;
-
- Ray3D probe;
- 
- for (size_t  i = 0; i < light_list.size(); ++i) {
- LightSource* light = light_list[i];
- Point3D lightPos=light->get_position();
- Point3D intersection=ray.intersection.point;
- Vector3D dir=lightPos-intersection;
- dir.normalize();
- probe=Ray3D(intersection, dir);
- probe.intersection.none=true;
- traverseScene(scene, probe);
- if(!probe.intersection.none){
- break;
- }
- }
- if(probe.intersection.none){
- computeShading(ray, light_list);
- col = ray.col;
- }else{
- ray.col=Color(0,0,0);
- col=ray.col;
- }
- }*/
-
