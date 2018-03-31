@@ -12,6 +12,7 @@
 #include <cmath>
 #include <iostream>
 #include <cstdlib>
+using namespace std;
 
 void Raytracer::traverseScene(Scene& scene, Ray3D& ray)  {
     for (size_t i = 0; i < scene.size(); ++i) {
@@ -125,39 +126,65 @@ void Raytracer::render(Camera& camera, Scene& scene, LightList& light_list, Imag
     
     viewToWorld = camera.initInvViewMatrix();
     
+    //added by us to do anti-aliasing
+    
+    int num_per_pixel = 100; // num of random ray per pixel
+    
+    
     // Construct a ray for each pixel.
     for (int i = 0; i < image.height; i++) {
         for (int j = 0; j < image.width; j++) {
             // Sets up ray origin and direction in view space,
             // image plane is at z = -1.
-            Point3D origin(0, 0, 0);
-            Point3D imagePlane;
-            imagePlane[0] = (-double(image.width)/2 + 0.5 + j)/factor;
-            imagePlane[1] = (-double(image.height)/2 + 0.5 + i)/factor;
-            imagePlane[2] = -1;
             
+            // original definition, comment out
+            // imagePlane[0] = (-double(image.width)/2 + 0.5 + j)/factor;
+            // imagePlane[1] = (-double(image.height)/2 + 0.5 + i)/factor;
+            // imagePlane[2] = -1;
             
-            
-            Ray3D ray;
-            // TODO: Convert ray to world space
-            //Ray Direction
-            Vector3D dir = imagePlane - origin;
-            
-            
-            
-            //Convert direction and origin to world-space
-            dir = viewToWorld * dir;
-            
-            dir.normalize();
-            
-            origin = viewToWorld * origin;
-            
-            //construct the ray
-            ray = Ray3D(origin,dir);
-            
-            Color col = shadeRay(ray, scene, light_list);
+            //added by us, compute average pixel value
+            //initialize each pixel's color to 0
+            //use Jitter Method, with simple random
+
+            Color col(0.0,0.0,0.0);
+       
+            for(int k = 0; k < num_per_pixel; k++){
+                Point3D origin(0, 0, 0);
+                Point3D imagePlane;
+                //get the random position between 0 and 1
+                double location = rand()/(RAND_MAX + 1.);
+                
+                imagePlane[0] = (-double(image.width)/2 + location + j)/factor;
+                imagePlane[1] = (-double(image.height)/2 + location + i)/factor;
+                imagePlane[2] = -1;
+                
+                
+                Ray3D ray;
+                // TODO: Convert ray to world space
+                //Ray Direction
+                Vector3D dir = imagePlane - origin;
+                
+                
+                
+                //Convert direction and origin to world-space
+                dir = viewToWorld * dir;
+                
+                dir.normalize();
+                
+                origin = viewToWorld * origin;
+                
+                //construct the ray
+                ray = Ray3D(origin,dir);
+              
+                col = col + shadeRay(ray, scene, light_list); // sum up color
+            }
+            //
+            Color scale(1.0/num_per_pixel,1.0/num_per_pixel,1.0/num_per_pixel);
+            col = col*scale;  //scale the color to find avg
             image.setColorAtPixel(i, j, col);
         }
+       
+        
     }
 }
 
