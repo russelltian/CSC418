@@ -87,7 +87,7 @@ bool UnitSphere::intersect(Ray3D& ray, const Matrix4x4& worldToModel,
     
 //    if(normal.length()<0.55&&normal.length()>0.45){
         normal.normalize();
-    ray.intersection.t_value = t<0? t2:t;
+    ray.intersection.t_value =t;
         ray.intersection.point = modelToWorld*p;
         ray.intersection.normal = transNorm(worldToModel, normal);
         ray.intersection.normal.normalize();
