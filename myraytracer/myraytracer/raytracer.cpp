@@ -52,11 +52,13 @@ Color Raytracer::shadeRay(Ray3D& ray, Scene& scene, LightList& light_list) {
     
     // Don't bother shading if the ray didn't hit
     // anything.
+    /*
     if (!ray.intersection.none) {
 //        computeShading(ray, light_list);
 //        col = ray.col;
         
         Ray3D probe;
+    
         for (size_t  i = 0; i < light_list.size(); ++i) {
             LightSource* light = light_list[i];
             Point3D lightPos=light->get_position();
@@ -76,6 +78,29 @@ Color Raytracer::shadeRay(Ray3D& ray, Scene& scene, LightList& light_list) {
         }else{
             ray.col=Color(0,0,0);
             col=ray.col;
+        }
+    }*/
+    
+    if(!ray.intersection.none){
+        //bounce once
+        Point3D intersect_p = ray.intersection.point;
+        Vector3D intersect_n(ray.intersection.normal);
+        Vector3D intersect_r = -1*(2*(intersect_n.dot(ray.dir))*intersect_n-ray.dir);
+        Material* intersect_mat = ray.intersection.mat;
+        intersect_r.normalize();
+        Ray3D second_r;
+        second_r = Ray3D(intersect_p,intersect_r);
+        traverseScene(scene, second_r);
+        if(second_r.intersection.none){
+            second_r.intersection.mat = intersect_mat;
+            computeShading(ray, light_list);
+                        col = ray.col;
+        }else{
+            computeShading(ray, light_list);
+            computeShading(second_r, light_list);
+            Color scale(0.1,0.1,0.1);
+            col = scale*second_r.col+ray.col;
+            ray.col=col;
         }
     }
     
