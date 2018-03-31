@@ -45,6 +45,8 @@ void Raytracer::computeShading(Ray3D& ray, LightList& light_list,Scene& scene) {
         LightSource* light = light_list[i];
         
         //compute shadows here
+        //if has intersection with an object on the way to the light,
+        //it is in that shadow
         Point3D lightPos = light->get_position(); // light position
         Point3D intersection = ray.intersection.point; //intersection position
         Vector3D dir = lightPos - intersection;     //direction
@@ -53,7 +55,7 @@ void Raytracer::computeShading(Ray3D& ray, LightList& light_list,Scene& scene) {
         
         traverseScene(scene, inter_to_light);//find intersection
         
-        //if intersect,compute next light
+        //if intersect,compute next light, this light is not visable
         if(!inter_to_light.intersection.none) {
             continue;
         }
@@ -93,7 +95,7 @@ Color Raytracer::shadeRay(Ray3D& ray, Scene& scene, LightList& light_list,int bo
         Ray3D second_r;
         second_r = Ray3D(intersect_p,intersect_r); //intersection point is its origin
         bounce--; //one more reflection
-        //recursive call
+        //recursive call, count is used for decide scale factor to the light
         col = col + shadeRay(second_r, scene, light_list,bounce,++count);
     }
     return col;
@@ -108,7 +110,7 @@ void Raytracer::render(Camera& camera, Scene& scene, LightList& light_list, Imag
     viewToWorld = camera.initInvViewMatrix();
     
     //added by us to do anti-aliasing
-    int num_per_pixel = 5; // num of random ray per pixel
+    int num_per_pixel = 25; // num of random ray per pixel
     
     
     // Construct a ray for each pixel.
@@ -154,7 +156,5 @@ void Raytracer::render(Camera& camera, Scene& scene, LightList& light_list, Imag
             
             image.setColorAtPixel(i, j, col);
         }
-       
-        
     }
 }

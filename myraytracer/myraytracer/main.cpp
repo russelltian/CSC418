@@ -34,8 +34,8 @@ int main(int argc, char* argv[])
     //int height = 240;
     
     //for testing purpose
-    int width = 640;
-    int height = 480;
+    int width = 1920;
+    int height = 1080;
     
     
     if (argc == 3) {
@@ -56,7 +56,7 @@ int main(int argc, char* argv[])
     //light_list.push_back(pLight);
     
     //added by us, define a extended area light source to make soft shadowing
-    PointLight* aLight = new PointLight(Point3D(0,0,5), Color(0.9,0.9,0.9));
+    PointLight* aLight = new PointLight(Point3D(-20,0,50), Color(0.9,0.9,0.9));
     light_list.push_back(aLight);
     
     
