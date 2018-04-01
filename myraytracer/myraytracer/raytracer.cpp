@@ -58,19 +58,7 @@ void Raytracer::computeTransforms(Scene& scene) {
 
 //modified computeshading to find shadows
 void Raytracer::computeShading(Ray3D& ray, LightList& light_list,Scene& scene) {
-//    //if the hit object is transparent
-//    Material* mat=ray.intersection.mat;
-//    if(mat->eta!=1.0){
-//
-//    }
-//
-//
-//
-//
-//
-//    //if the object is not transparent
     Ray3D inter_to_light; //from intersection to light
-    
     for (size_t  i = 0; i < light_list.size(); ++i) {
         LightSource* light = light_list[i];
         //point light
@@ -94,8 +82,8 @@ void Raytracer::computeShading(Ray3D& ray, LightList& light_list,Scene& scene) {
         }else if (light->get_type() == 1){
             //area light
             //need to approximate the light source
-            int row = 3; //how many rows of point light
-            int col = 3; //how many cols of point light
+            int row = 6; //how many rows of point light
+            int col = 6; //how many cols of point light
             for(int s = 0;s < row; s++){
                 for(int z=0;z< col; z++){
                     Point3D lightPos = light->get_many_position(s,z); // light position
@@ -167,7 +155,7 @@ void Raytracer::render(Camera& camera, Scene& scene, LightList& light_list, Imag
     viewToWorld = camera.initInvViewMatrix();
     
     //added by us to do anti-aliasing
-    int num_per_pixel_row = 2; // pow(0.5) to the num of random ray per pixel
+    int num_per_pixel_row = 1; // pow(0.5) to the num of random ray per pixel
     
     
     // Construct a ray for each pixel.
@@ -206,9 +194,10 @@ void Raytracer::render(Camera& camera, Scene& scene, LightList& light_list, Imag
                     //construct the ray
                     ray = Ray3D(origin,dir);
                 
-                int depth = 0; //define depth to achieve reflection
-                int count = 0;
-                col = col + shadeRay(ray, scene, light_list,depth,count); //sum up color, include depth
+                    int depth = 1; //define depth to achieve reflection
+                    int count = 0;
+                    col = col + shadeRay(ray, scene, light_list,depth,count); //sum up color, include depth
+                }
             }
             double num_per_pixel = pow(num_per_pixel_row,2.0);
             Color scale(1.0/num_per_pixel,1.0/num_per_pixel,1.0/num_per_pixel);
