@@ -43,23 +43,49 @@ void Raytracer::computeShading(Ray3D& ray, LightList& light_list,Scene& scene) {
     Ray3D inter_to_light; //from intersection to light
     for (size_t  i = 0; i < light_list.size(); ++i) {
         LightSource* light = light_list[i];
+        //point light
+        if(light->get_type() == 0){
+            //compute shadows here
+            //if has intersection with an object on the way to the light,
+            //it is in that shadow
+            Point3D lightPos = light->get_position(); // light position
+            Point3D intersection = ray.intersection.point; //intersection position
+            Vector3D dir = lightPos - intersection;     //direction
+            dir.normalize(); //normalization
+            inter_to_light = Ray3D(intersection, dir);
         
-        //compute shadows here
-        //if has intersection with an object on the way to the light,
-        //it is in that shadow
-        Point3D lightPos = light->get_position(); // light position
-        Point3D intersection = ray.intersection.point; //intersection position
-        Vector3D dir = lightPos - intersection;     //direction
-        dir.normalize(); //normalization
-        inter_to_light = Ray3D(intersection, dir);
+            traverseScene(scene, inter_to_light);//find intersection
         
-        traverseScene(scene, inter_to_light);//find intersection
-        
-        //if intersect,compute next light, this light is not visable
-        if(!inter_to_light.intersection.none) {
-            continue;
+            //if intersect,compute next light, this light is not visable
+            if(!inter_to_light.intersection.none) {
+                continue;
+            }
+            light->shade(ray);
+        }else if (light->get_type() == 1){
+            //area light
+            //need to approximate the light source
+            int row = 4; //how many rows of point light
+            int col = 4; //how many cols of point light
+            for(int s = 0;s < row; s++){
+                for(int z=0;z< col; z++){
+                    Point3D lightPos = light->get_many_position(s,z); // light position
+                    Point3D intersection = ray.intersection.point; //intersection position
+                    Vector3D dir = lightPos - intersection;     //direction
+                    dir.normalize(); //normalization
+                    inter_to_light = Ray3D(intersection, dir);
+                    
+                    traverseScene(scene, inter_to_light);//find intersection
+                    
+                    //if intersect,compute next light, this light is not visable
+                    if(!inter_to_light.intersection.none) {
+                        continue;
+                    }
+                    light->shade(ray);
+                }
+            }
+            Color scale(1.0/(row*col),1.0/(row*col),1.0/(row*col));
+            ray.col = ray.col * scale;
         }
-        light->shade(ray);
     }
     //TODO: averaging the color if there are multiple light source
     //note some light source hit, some not, so  need to think
@@ -97,6 +123,7 @@ Color Raytracer::shadeRay(Ray3D& ray, Scene& scene, LightList& light_list,int bo
         bounce--; //one more reflection
         //recursive call, count is used for decide scale factor to the light
         col = col + shadeRay(second_r, scene, light_list,bounce,++count);
+        col.clamp();
     }
     return col;
 }
@@ -110,7 +137,7 @@ void Raytracer::render(Camera& camera, Scene& scene, LightList& light_list, Imag
     viewToWorld = camera.initInvViewMatrix();
     
     //added by us to do anti-aliasing
-    int num_per_pixel = 25; // num of random ray per pixel
+    int num_per_pixel_row = 3; // pow(0.5) to the num of random ray per pixel
     
     
     // Construct a ray for each pixel.
@@ -125,32 +152,36 @@ void Raytracer::render(Camera& camera, Scene& scene, LightList& light_list, Imag
 
             Color col(0.0,0.0,0.0);
        
-            for(int k = 0; k < num_per_pixel; k++){
-                Point3D origin(0, 0, 0);
-                Point3D imagePlane;
-                //get the random position between 0 and 1
-                double location = rand()/(RAND_MAX + 1.);
-                location = location/num_per_pixel*(k+1);//devide them to different block
-                imagePlane[0] = (-double(image.width)/2 + location + j)/factor;
-                imagePlane[1] = (-double(image.height)/2 + location + i)/factor;
-                imagePlane[2] = -1;
+            for(int k = 0; k < num_per_pixel_row; k++){
+                for(int m = 0; m < num_per_pixel_row; m++){
+                    Point3D origin(0, 0, 0);
+                    Point3D imagePlane;
+                    //get the random position between 0 and 1
+                    double location = rand()/(RAND_MAX + 1.);
+                    double location_x = location/num_per_pixel_row*(k+1);//devide them to different block
+                    double location_y = location/num_per_pixel_row*(m+1);
+                    imagePlane[0] = (-double(image.width)/2 + location_x + j)/factor;
+                    imagePlane[1] = (-double(image.height)/2 + location_y + i)/factor;
+                    imagePlane[2] = -1;
                 
                 
-                Ray3D ray;
-                //Convert ray to world space
-                //Ray Direction
-                Vector3D dir = imagePlane - origin;
-                //Convert direction and origin to world-space
-                dir = viewToWorld * dir;
-                dir.normalize();
-                origin = viewToWorld * origin;
-                //construct the ray
-                ray = Ray3D(origin,dir);
+                    Ray3D ray;
+                    //Convert ray to world space
+                    //Ray Direction
+                    Vector3D dir = imagePlane - origin;
+                    //Convert direction and origin to world-space
+                    dir = viewToWorld * dir;
+                    dir.normalize();
+                    origin = viewToWorld * origin;
+                    //construct the ray
+                    ray = Ray3D(origin,dir);
                 
-                int depth = 1; //define depth to achieve reflection
-                int count = 0;
-                col = col + shadeRay(ray, scene, light_list,depth,count); //sum up color, include depth
+                    int depth = 1; //define depth to achieve reflection
+                    int count = 0;
+                    col = col + shadeRay(ray, scene, light_list,depth,count); //sum up color, include depth
+                }
             }
+            double num_per_pixel = pow(num_per_pixel_row,2.0);
             Color scale(1.0/num_per_pixel,1.0/num_per_pixel,1.0/num_per_pixel);
             col = col*scale;  //scale the color to find avg color per pixel
             
