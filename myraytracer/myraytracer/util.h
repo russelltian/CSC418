@@ -135,6 +135,9 @@ struct Material {
             texture[1]=texturein[1];
             texture[2]=texturein[2];
         }
+        else{
+            texture[0]=NULL;
+        }
         
         
     }
