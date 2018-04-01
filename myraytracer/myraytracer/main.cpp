@@ -44,8 +44,8 @@ int main(int argc, char* argv[])
 //    int width = 256;
 //    int height = 256;
     
-    int width = 1080;
-    int height = 1440;
+    int width = 1440;
+    int height = 1080;
     
     if (argc == 3) {
         width = atoi(argv[1]);
@@ -129,6 +129,19 @@ int main(int argc, char* argv[])
                      Color(0, 0, 0),
                      51.2,0.0,1.0,aurora);
     
+    unsigned char* rainbow[3];
+    for(unsigned i=0;i<3;i++){
+        rainbow[i]=new unsigned char();
+    }
+    read=bmp_read ( "rainbow.bmp", twidth, theight,&rainbow[0], &rainbow[1], &rainbow[2]);
+    if(read){
+        std::cout<<"error loading texture"<<std::endl;
+    }
+    
+    Material rainbowMat(Color(0, 0, 0), Color(0, 0, 0),
+                       Color(0, 0, 0),
+                       51.2,0.0,1.0,rainbow);
+    
     
     // Defines a point light source.
     //PointLight* pLight = new PointLight(Point3D(0,0,5), Color(0.9,0.9,0.9));
@@ -140,10 +153,10 @@ int main(int argc, char* argv[])
     
     
     // Add a unit square into the scene with material mat.
-    SceneNode* sphere = new SceneNode(new UnitSphere(), &auroraMat);
+    SceneNode* sphere = new SceneNode(new UnitSphere(), &rainbowMat);
     scene.push_back(sphere);
     
-    SceneNode* sphere2 = new SceneNode(new UnitSphere(), &waveMat);
+    SceneNode* sphere2 = new SceneNode(new UnitSphere(), &auroraMat);
     scene.push_back(sphere2);
     
     SceneNode* lens = new SceneNode(new UnitSphere(), &glass);

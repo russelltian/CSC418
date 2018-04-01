@@ -29,9 +29,9 @@ void PointLight::shade(Ray3D& ray) {
     
     //find intersection material color term
     Point3D localpos=ray.intersection.localPos;
-    int x=10*(localpos[0]+0.5)*255;
+    int x=3*(localpos[0]+0.5)*255;
     x%=255;
-    int y=10*(localpos[1]+0.5)*255;
+    int y=3*(localpos[1]+0.5)*255;
     y%=255;
     
     
@@ -53,10 +53,10 @@ void PointLight::shade(Ray3D& ray) {
     //if use texture mapping
     if(texture[0]){
         Color texColor(texture[0][x+y*256]/255.0,texture[1][x+y*256]/255.0,texture[2][x+y*256]/255.0);
-        diffuse = Color(0,0,0);//diffuse color
-        ambient =texColor;//ambient color
-        specular = Color(0,0,0);         //specular color
-        specular_term = 1.0;   //specular exp
+        diffuse = texColor;//diffuse color
+        ambient =Color(0,0,0);//ambient color
+        specular = texColor;         //specular color
+        specular_term = mat->specular_exp;   //specular exp
     }else{
         std::cout<<"???"<<std::endl;
     }
