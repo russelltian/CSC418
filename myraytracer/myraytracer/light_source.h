@@ -19,6 +19,10 @@ class LightSource {
     virtual void shade(Ray3D&) = 0;
     virtual Point3D get_position() const = 0;
     virtual ~LightSource() {}
+   
+    //our new function
+    virtual int get_type() const = 0; //added to return type of light
+    virtual Point3D get_many_position(int i,int j) const =0; //used for area light to get uniform distribution
 };
 
 // List of all light sources in your scene
@@ -30,49 +34,59 @@ class PointLight : public LightSource {
     public:
     PointLight(Point3D pos, Color col)
     :
-    pos(pos), col_ambient(col), col_diffuse(col), col_specular(col) {}
+    pos(pos), col_ambient(col), col_diffuse(col), col_specular(col) {type = 0;}
     
     PointLight(Point3D pos, Color ambient, Color diffuse, Color specular)
     :
-    pos(pos), col_ambient(ambient), col_diffuse(diffuse), col_specular(specular) {}
+    pos(pos), col_ambient(ambient), col_diffuse(diffuse), col_specular(specular) {type = 0;}
     
     void shade(Ray3D& ray);
     
     Point3D get_position() const { return pos; }
     
+    //our functions
+    int get_type() const{return type;}
+    Point3D get_many_position(int i,int j) const { return pos; }//no need in pointlight
     private:
     Point3D pos;
     Color col_ambient;
     Color col_diffuse;
     Color col_specular;
+    
+    int type;//equals to 0, area light
 };
 
-//added by us, extended lightsource to produce softshadow
+//added by us, area lightsource to produce softshadow
 
-class ExtendedLight : public LightSource {
+class AreaLight : public LightSource {
 public:
     // add length and width to make it as a square
-    ExtendedLight(Point3D pos, Color col, Vector3D l, Vector3D w)
+    AreaLight(Point3D pos, Color col, Vector3D l, Vector3D w)
     :
     pos(pos), col_ambient(col), col_diffuse(col), col_specular(col),
-    length(l),width(w){}
+    length(l),width(w){type=1;}
     
-    ExtendedLight(Point3D pos, Color ambient, Color diffuse, Color specular,Vector3D l, Vector3D w)
+    AreaLight(Point3D pos, Color ambient, Color diffuse, Color specular,Vector3D l, Vector3D w)
     :
     pos(pos), col_ambient(ambient), col_diffuse(diffuse), col_specular(specular),
-    length(l),width(w) {}
+    length(l),width(w) {type=1;}
     
     void shade(Ray3D& ray);
     
-    Point3D get_position() const { return pos; }
-    
+    Point3D get_position()const { return pos; } //no need in area light
+    Point3D get_many_position(int i,int j) const;// filled in light_source.cpp
+    int get_type() const{return type;} 
 private:
     Point3D pos;
     Color col_ambient;
     Color col_diffuse;
     Color col_specular;
+    //actually length and width defines the light plane
+    // i, j is used to locate the random point light position
     Vector3D length;
     Vector3D width;
+   
+    int type; //equals to 1, area light
 };
 
 
