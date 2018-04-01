@@ -52,7 +52,7 @@ void init(){
         std::cout<<"error loading texture"<<std::endl;
     }
     
-    Material waveMat(Color(0, 0, 0), Color(0.75164,0.60648,0.22648),
+    Material *waveMat=new Material(Color(0, 0, 0), Color(0.75164,0.60648,0.22648),
                      Color(0.628281, 0.555802, 0.366065),
                      51.2,0.0,1.0,wave);
     
@@ -66,7 +66,7 @@ void init(){
         std::cout<<"error loading texture"<<std::endl;
     }
     
-    Material gridMat(Color(0, 0, 0), Color(0.75164,0.60648,0.22648),
+    Material *gridMat=new Material(Color(0, 0, 0), Color(0.75164,0.60648,0.22648),
                      Color(0.628281, 0.555802, 0.366065),
                      51.2,0.0,1.0,grid);
     
@@ -79,7 +79,7 @@ void init(){
         std::cout<<"error loading texture"<<std::endl;
     }
     
-    Material woodMat(Color(0, 0, 0), Color(0.75164,0.60648,0.22648),
+    Material *woodMat=new Material(Color(0, 0, 0), Color(0.75164,0.60648,0.22648),
                      Color(0.628281, 0.555802, 0.366065),
                      51.2,0.0,1.0,wood);
     
@@ -93,7 +93,7 @@ void init(){
         std::cout<<"error loading texture"<<std::endl;
     }
     
-    Material auroraMat(Color(0, 0, 0), Color(0, 0, 0),
+    Material *auroraMat=new Material(Color(0, 0, 0), Color(0, 0, 0),
                        Color(0, 0, 0),
                        51.2,0.0,1.0,aurora);
     
@@ -106,32 +106,32 @@ void init(){
         std::cout<<"error loading texture"<<std::endl;
     }
     
-    Material rainbowMat(Color(0, 0, 0), Color(0, 0, 0),
+    Material *rainbowMat=new Material(Color(0, 0, 0), Color(0, 0, 0),
                         Color(0, 0, 0),
                         51.2,0.0,1.0,rainbow);
     
     // Add a unit square into the scene with material mat.
-//    SceneNode* sphere = new SceneNode(new UnitSphere(), &rainbowMat);
-//    scene.push_back(sphere);
-//
-//    SceneNode* sphere2 = new SceneNode(new UnitSphere(), &auroraMat);
-//    scene.push_back(sphere2);
-//
-//    SceneNode* lens = new SceneNode(new UnitSphere(), &glass);
-//    scene.push_back(lens);
-//
-//    SceneNode* plane = new SceneNode(new UnitSquare(), &woodMat);
-//    scene.push_back(plane);
-//
-//    SceneNode* chro = new SceneNode(new UnitSphere(), &ranColor);
-//    scene.push_back(chro);
-    
-    SceneNode* sphere = new SceneNode(new UnitSphere(), gold);
+    SceneNode* sphere = new SceneNode(new UnitSphere(), rainbowMat);
     scene.push_back(sphere);
+
+    SceneNode* sphere2 = new SceneNode(new UnitSphere(), auroraMat);
+    scene.push_back(sphere2);
+
     SceneNode* lens = new SceneNode(new UnitSphere(), glass);
-//    scene.push_back(lens);
-    SceneNode* plane = new SceneNode(new UnitSquare(), jade);
+    scene.push_back(lens);
+
+    SceneNode* plane = new SceneNode(new UnitSquare(), woodMat);
     scene.push_back(plane);
+
+    SceneNode* chro = new SceneNode(new UnitSphere(), ranColor);
+    scene.push_back(chro);
+    
+//    SceneNode* sphere = new SceneNode(new UnitSphere(), gold);
+//    scene.push_back(sphere);
+//    SceneNode* lens = new SceneNode(new UnitSphere(), glass);
+////    scene.push_back(lens);
+//    SceneNode* plane = new SceneNode(new UnitSquare(), jade);
+//    scene.push_back(plane);
     // Apply some transformations to the sphere and unit square.
     //RTS
     double factor1[3] = { 1.0, 2.0, 1.0 };
@@ -150,15 +150,15 @@ void init(){
     plane->scale(Point3D(0,0,0), factor2);
     
     
-//    double factor3[3] = { 2.0, 1.0, 1.0 };
-//    sphere2->translate(Vector3D(0, 1.5, -7));
-//    sphere2->rotate('x', -45);
-//    sphere2->rotate('z', 45);
-//    sphere2->scale(Point3D(0, 0, 0), factor3);
-//    
-//    double grayfactor[3] = { 1.0, 1.0, 1.0 };
-//    chro->translate(Vector3D(0, 1, -1));
-//    chro->scale(Point3D(0,0,0), grayfactor);
+    double factor3[3] = { 2.0, 1.0, 1.0 };
+    sphere2->translate(Vector3D(0, 1.5, -7));
+    sphere2->rotate('x', -45);
+    sphere2->rotate('z', 45);
+    sphere2->scale(Point3D(0, 0, 0), factor3);
+    
+    double grayfactor[3] = { 1.0, 1.0, 1.0 };
+    chro->translate(Vector3D(0, 1, -1));
+    chro->scale(Point3D(0,0,0), grayfactor);
 }
 
 void hard_shadow(Raytracer& raytracer,int width,int height){
@@ -273,7 +273,7 @@ int main(int argc, char* argv[])
         height = atoi(argv[2]);
     }
     init();
-    soft_shadow(raytracer,width,height);
+    hard_shadow(raytracer,width,height);
 
     return 0;
 }
