@@ -183,8 +183,84 @@ void Raytracer::render(Camera& camera, Scene& scene, LightList& light_list, Imag
             }
             double num_per_pixel = pow(num_per_pixel_row,2.0);
             Color scale(1.0/num_per_pixel,1.0/num_per_pixel,1.0/num_per_pixel);
-            col = col*scale;  //scale the color to find avg color per pixel
+            col = scale*col;  //scale the color to find avg color per pixel
             
+            image.setColorAtPixel(i, j, col);
+        }
+    }
+}
+
+//added to do depth of field render
+//we give the camera a thin lens instead of a pin hole
+void Raytracer::render_dof(Camera& camera, Scene& scene, LightList& light_list, Image& image, double focus_index) {
+    computeTransforms(scene);
+    
+    Matrix4x4 viewToWorld;
+    double factor = (double(image.height)/2)/tan(camera.fov*M_PI/360.0);
+    
+    viewToWorld = camera.initInvViewMatrix();
+    
+    //added by us to do anti-aliasing
+    //in DoF, we are averaging the color, so we abandon anti-aliasing,
+    //otherwise the algo would be O(N^4), now is O(N^3)
+    int num_per_pixel_row = 1; // pow(0.5) to the num of random ray per pixel
+    double interval = 0.01; // lens postion interval
+    double low_high = 0.1; //lower and upper bound
+    // Construct a ray for each pixel.
+    for (int i = 0; i < image.height; i++) {
+        for (int j = 0; j < image.width; j++) {
+            // Sets up ray origin and direction in view space,
+            // image plane is at z = -1.
+            
+            //added by us, compute average pixel value
+            //initialize each pixel's color to 0
+            //use Jitter Method, with simple random sample
+            
+            Color col(0.0,0.0,0.0);
+            Point3D origin(0, 0, 0);
+            Point3D imagePlane;
+            //get the random position between 0 and 1
+            //double location = rand()/(RAND_MAX + 1.);
+            // double location_x = location/num_per_pixel_row*(k+1);//devide them to different block
+            //double location_y = location/num_per_pixel_row*(m+1);
+            imagePlane[0] = (-double(image.width)/2 + 0.5 + j)/factor;
+            imagePlane[1] = (-double(image.height)/2 + 0.5 + i)/factor;
+            imagePlane[2] = -1;
+            
+            for(int k = 0; k < num_per_pixel_row; k++){
+                for(int m = 0; m < num_per_pixel_row; m++){
+                 
+                    //use secondary ray to compute depth of field
+                    //first give primary ray a direction and focus point
+                    //then use vector manipulation to find second ray direction
+                    Vector3D dir = imagePlane - origin;
+                    Vector3D focal_point = focus_index*dir;
+                    for( double len_position = -low_high; len_position <= low_high; len_position+=interval){
+                        //find secondary ray origin and direction
+                        Vector3D len_vec = Vector3D(0,0,0)+ Vector3D(0,len_position,0);
+                        Point3D sec_origin = Point3D(len_vec);
+                        //Vector3D temp(imagePlane[0],imagePlane[1],imagePlane[2]);
+                        Vector3D sec_dir = focal_point - len_vec;
+                        //Convert direction and origin to world-space
+                        sec_dir = viewToWorld * sec_dir;
+                        sec_dir.normalize();
+                        sec_origin = viewToWorld * sec_origin;
+                        //Build the ray
+                        Ray3D ray;
+                        ray = Ray3D(sec_origin,sec_dir);
+                        int depth = 1; //define depth to achieve reflection
+                        int count = 0;
+                        col = col + shadeRay(ray, scene, light_list,depth,count); //sum up color, include depth
+                    }
+                }
+            }
+            //Computed color for each pixel, need to find the average
+            //double num_per_pixel = pow(num_per_pixel_row,2.0);
+            //Color scale(1.0/num_per_pixel,1.0/num_per_pixel,1.0/num_per_pixel);
+            int num_per_lens = floor((2*low_high)/interval)+1;
+            Color lens_scale(1.0/num_per_lens,1.0/num_per_lens,1.0/num_per_lens);
+            // col = scale*col;  //scale the color to find avg color per pixel
+            col = lens_scale * col; 
             image.setColorAtPixel(i, j, col);
         }
     }
