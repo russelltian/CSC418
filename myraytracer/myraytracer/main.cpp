@@ -277,7 +277,7 @@ int main(int argc, char* argv[])
         width = atoi(argv[1]);
         height = atoi(argv[2]);
     }
-    DOF(raytracer,light_list,scene,width,height);
+    soft_shadow(raytracer,light_list,scene,width,height);
 
     return 0;
 }
