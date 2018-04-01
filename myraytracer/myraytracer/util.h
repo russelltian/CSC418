@@ -127,9 +127,17 @@ Color operator +(const Color& u, const Color& v);
 std::ostream& operator <<(std::ostream& o, const Color& c);
 
 struct Material {
-    Material(Color ambient, Color diffuse, Color specular, double exp,double focu,double alph) :
+    Material(Color ambient, Color diffuse, Color specular, double exp,double focu,double alph,unsigned char* texturein[3]) :
     ambient(ambient), diffuse(diffuse), specular(specular),
-    specular_exp(exp),focal_length(focu),alpha(alph) {}
+    specular_exp(exp),eta(focu),alpha(alph) {
+        if(texturein){
+            texture[0]=texturein[0];
+            texture[1]=texturein[1];
+            texture[2]=texturein[2];
+        }
+        
+        
+    }
     
     // Ambient components for Phong shading.
     Color ambient;
@@ -140,12 +148,15 @@ struct Material {
     // Specular expoent.
     double specular_exp;
     
-    double focal_length;
+    double eta;
     double alpha;
+    unsigned char* texture[3];
 };
 
 struct Intersection {
     // Location of intersection.
+    Point3D localPos;
+    
     Point3D point;
     // Normal at the intersection.
     Vector3D normal;

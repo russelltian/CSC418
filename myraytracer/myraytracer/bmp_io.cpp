@@ -1746,7 +1746,14 @@ bool bmp_read ( char const *file_in_name, unsigned long int *width, long int *he
     //
     //  Open the input file.
     //
-    file_in.open ( file_in_name, ios::in | ios::binary );
+//    file_in.open ( file_in_name, ios::in | ios::binary );
+    
+    try {
+        file_in.open ( file_in_name, std::ifstream::binary | std::ifstream::in );
+    }
+    catch (std::ios_base::failure& e) {
+        std::cerr << e.what() << '\n';
+    }
     
     if ( !file_in )
     {

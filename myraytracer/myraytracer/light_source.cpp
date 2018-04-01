@@ -28,11 +28,37 @@ void PointLight::shade(Ray3D& ray) {
     normal.normalize();
     
     //find intersection material color term
+    Point3D localpos=ray.intersection.localPos;
+    int x=3*(localpos[0]+0.5)*255;
+    x%=255;
+    int y=3*(localpos[1]+0.5)*255;
+    y%=255;
+    
+    
+    
     Material* mat = ray.intersection.mat;
+    
+    unsigned char* texture[3];
+    texture[0]=mat->texture[0];
+    texture[1]=mat->texture[1];
+    texture[2]=mat->texture[2];
+    
+//    unsigned char** texture=(unsigned char**)mat->texture;
+    
     Color diffuse = mat->diffuse;           //diffuse color
     Color ambient = mat->ambient;           //ambient color
     Color specular = mat->specular;         //specular color
     double specular_term = mat->specular_exp;   //specular exp
+    
+    //if use texture mapping
+    if(x>0&&y>0&&texture[0]){
+        Color texColor(texture[0][x+y*256]/255.0,texture[1][x+y*256]/255.0,texture[2][x+y*256]/255.0);
+        diffuse = Color(0,0,0);//diffuse color
+        ambient =texColor;//ambient color
+        specular = Color(0,0,0);         //specular color
+        specular_term = 1.0;   //specular exp
+    }
+
     
     
    //calculate diffuse color

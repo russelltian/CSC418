@@ -8,6 +8,8 @@
 
 #include <cmath>
 #include "scene_object.h"
+#include <math.h>
+#define PI 3.14159265
 
 bool UnitSquare::intersect(Ray3D& ray, const Matrix4x4& worldToModel,
                            const Matrix4x4& modelToWorld) {
@@ -30,7 +32,7 @@ bool UnitSquare::intersect(Ray3D& ray, const Matrix4x4& worldToModel,
     double t = -origin[2]/direction[2];
     
     //invalid intersection
-    if(t <= 0.0000001 || direction[2] == 0||(!ray.intersection.none&&t>ray.intersection.t_value)){
+    if(t <= 0.0000000001 || direction[2] == 0||(!ray.intersection.none&&t>ray.intersection.t_value)){
         return false;
     }
     
@@ -40,8 +42,9 @@ bool UnitSquare::intersect(Ray3D& ray, const Matrix4x4& worldToModel,
     if(p[0] >= -0.5 && p[0] <= 0.5 && p[1] >= -0.5 && p[1] <= 0.5){
         ray.intersection.t_value = t;
         ray.intersection.point = modelToWorld*p;
+        ray.intersection.localPos=p;
         ray.intersection.normal = transNorm(worldToModel, normal);
-        ray.intersection.none = false; // there is an intersection
+//        ray.intersection.none = false; // there is an intersection
         return true;
     }
     //ray.intersection.none = true;
@@ -85,13 +88,19 @@ bool UnitSphere::intersect(Ray3D& ray, const Matrix4x4& worldToModel,
     
     
     
-//    if(normal.length()<0.55&&normal.length()>0.45){
-        normal.normalize();
+
+    normal.normalize();
+    double u=atan2(normal[3],normal[0])/(2*PI);
+    double v=-asin(normal[1])/PI;
+    
+//    std::cout<<"u: "<<u<<" v "<<v<<std::endl;
+    
+    ray.intersection.localPos = Point3D(u,v,0);
     ray.intersection.t_value =t;
-        ray.intersection.point = modelToWorld*p;
-        ray.intersection.normal = transNorm(worldToModel, normal);
-        ray.intersection.normal.normalize();
-        ray.intersection.none=false;
+    ray.intersection.point = modelToWorld*p;
+    ray.intersection.normal = transNorm(worldToModel, normal);
+    ray.intersection.normal.normalize();
+//        ray.intersection.none=false;
         return true;
 //    }
 //    return false;

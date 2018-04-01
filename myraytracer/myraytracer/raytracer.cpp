@@ -19,9 +19,28 @@ void Raytracer::traverseScene(Scene& scene, Ray3D& ray)  {
         SceneNode* node = scene[i];
         
         if (node->obj->intersect(ray, node->worldToModel, node->modelToWorld)) {
-            ray.intersection.mat = node->mat;
+            //if the material is transparent
+            if(node->mat->eta>0){
+                double eta=1.0/node->mat->eta;
+                Point3D origin=ray.intersection.point+0.000001*ray.dir;
+                Vector3D normal=ray.intersection.normal;
+                normal.normalize();
+                Vector3D in_ray=ray.dir;
+                in_ray.normalize();
+                
+                double c1=normal.dot(-in_ray);
+                double c2=sqrt(1.0-eta*eta*(1.0-c1*c1));
+                Vector3D newDir=eta*(in_ray+c1*normal)-c2*normal;
+                newDir.normalize();
+                Ray3D newRay(origin,newDir);
+                traverseScene(scene, newRay);
+                ray=newRay;
+                
+            }else{
+                ray.intersection.mat = node->mat;
+                ray.intersection.none = false;
+            }
         }
-
     }
 }
 
@@ -39,8 +58,19 @@ void Raytracer::computeTransforms(Scene& scene) {
 
 //modified computeshading to find shadows
 void Raytracer::computeShading(Ray3D& ray, LightList& light_list,Scene& scene) {
-    
+//    //if the hit object is transparent
+//    Material* mat=ray.intersection.mat;
+//    if(mat->eta!=1.0){
+//
+//    }
+//
+//
+//
+//
+//
+//    //if the object is not transparent
     Ray3D inter_to_light; //from intersection to light
+    
     for (size_t  i = 0; i < light_list.size(); ++i) {
         LightSource* light = light_list[i];
         
@@ -146,7 +176,7 @@ void Raytracer::render(Camera& camera, Scene& scene, LightList& light_list, Imag
                 //construct the ray
                 ray = Ray3D(origin,dir);
                 
-                int depth = 1; //define depth to achieve reflection
+                int depth = 0; //define depth to achieve reflection
                 int count = 0;
                 col = col + shadeRay(ray, scene, light_list,depth,count); //sum up color, include depth
             }

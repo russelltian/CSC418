@@ -40,6 +40,10 @@
 		45DD8BC6206173A800BBDABE /* scene_object.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = scene_object.h; sourceTree = "<group>"; };
 		45DD8BC8206173D900BBDABE /* util.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = util.cpp; sourceTree = "<group>"; };
 		45DD8BC9206173D900BBDABE /* util.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = util.h; sourceTree = "<group>"; };
+		7CE91D512070939200CC6A32 /* Wood.jpg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = Wood.jpg; sourceTree = "<group>"; };
+		7CE91D522070944D00CC6A32 /* grid.jpg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = grid.jpg; sourceTree = "<group>"; };
+		7CE91D552070A38D00CC6A32 /* grid.bmp */ = {isa = PBXFileReference; lastKnownFileType = image.bmp; path = grid.bmp; sourceTree = "<group>"; };
+		7CE91D562070ADBC00CC6A32 /* maple_natural.bmp */ = {isa = PBXFileReference; lastKnownFileType = image.bmp; path = maple_natural.bmp; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -72,6 +76,10 @@
 		45DD8BB42061710C00BBDABE /* myraytracer */ = {
 			isa = PBXGroup;
 			children = (
+				7CE91D562070ADBC00CC6A32 /* maple_natural.bmp */,
+				7CE91D552070A38D00CC6A32 /* grid.bmp */,
+				7CE91D522070944D00CC6A32 /* grid.jpg */,
+				7CE91D512070939200CC6A32 /* Wood.jpg */,
 				45DD8BB52061710C00BBDABE /* main.cpp */,
 				45DD8BBC2061729700BBDABE /* light_source.cpp */,
 				45DD8BBD2061729700BBDABE /* light_source.h */,
