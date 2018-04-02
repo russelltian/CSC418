@@ -38,7 +38,8 @@ bool UnitSquare::intersect(Ray3D& ray, const Matrix4x4& worldToModel,
     
     Point3D p = origin + t*direction;
     Vector3D normal = Vector3D(0,0,1);
-    
+    if(normal.dot(direction)>0.0000001)normal = Vector3D(0,0,-1);
+
     if(p[0] >= -0.5 && p[0] <= 0.5 && p[1] >= -0.5 && p[1] <= 0.5){
         ray.intersection.t_value = t;
         ray.intersection.point = modelToWorld*p;
