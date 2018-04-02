@@ -107,7 +107,6 @@ void init(){
     }
     
     Material *rainbowMat = new Material(Color(0, 0, 0), Color(0, 0, 0),
-<<<<<<< HEAD
                         Color(0, 0, 0),
                         51.2,0.0,1.0,rainbow);
     
@@ -133,33 +132,6 @@ void init(){
 //    scene.push_back(lens);
     SceneNode* plane = new SceneNode(new UnitSquare(), jade);
   /// scene.push_back(plane);
-=======
-                                        Color(0, 0, 0),
-                                        51.2,0.0,1.0,rainbow);
-    
-    // Add a unit square into the scene with material mat.
-    //    SceneNode* sphere = new SceneNode(new UnitSphere(), &rainbowMat);
-    //    scene.push_back(sphere);
-    //
-    //    SceneNode* sphere2 = new SceneNode(new UnitSphere(), &auroraMat);
-    //    scene.push_back(sphere2);
-    //
-    //    SceneNode* lens = new SceneNode(new UnitSphere(), &glass);
-    //    scene.push_back(lens);
-    //
-    //    SceneNode* plane = new SceneNode(new UnitSquare(), &woodMat);
-    //    scene.push_back(plane);
-    //
-    //    SceneNode* chro = new SceneNode(new UnitSphere(), &ranColor);
-    //    scene.push_back(chro);
-    
-    SceneNode* sphere = new SceneNode(new UnitSphere(), gold);
-    //    scene.push_back(sphere);
-    SceneNode* lens = new SceneNode(new UnitSphere(), glass);
-    //    scene.push_back(lens);
-    SceneNode* plane = new SceneNode(new UnitSquare(), jade);
-    /// scene.push_back(plane);
->>>>>>> 7a9132903299ae41097610487204019dcddd371b
     
     //added a cylinder
     SceneNode* cylinder = new SceneNode(new UnitCylinder(),rainbowMat);
@@ -184,31 +156,7 @@ void init(){
     double cyl_factor[3] = { 1.0, 1.0, 1.0 };
     cylinder->translate(Vector3D(0, 0, -5));
     cylinder->rotate('y', 90);
-<<<<<<< HEAD
-//    cylinder->scale(Point3D(0,0,0), cyl_factor);
-    
-//    double factor3[3] = { 2.0, 1.0, 1.0 };
-//    sphere2->translate(Vector3D(0, 1.5, -7));
-//    sphere2->rotate('x', -45);
-//    sphere2->rotate('z', 45);
-//    sphere2->scale(Point3D(0, 0, 0), factor3);
-//    
-//    double grayfactor[3] = { 1.0, 1.0, 1.0 };
-//    chro->translate(Vector3D(0, 1, -1));
-//    chro->scale(Point3D(0,0,0), grayfactor);
-=======
-    //    cylinder->scale(Point3D(0,0,0), cyl_factor);
-    
-    //    double factor3[3] = { 2.0, 1.0, 1.0 };
-    //    sphere2->translate(Vector3D(0, 1.5, -7));
-    //    sphere2->rotate('x', -45);
-    //    sphere2->rotate('z', 45);
-    //    sphere2->scale(Point3D(0, 0, 0), factor3);
-    //
-    //    double grayfactor[3] = { 1.0, 1.0, 1.0 };
-    //    chro->translate(Vector3D(0, 1, -1));
-    //    chro->scale(Point3D(0,0,0), grayfactor);
->>>>>>> 7a9132903299ae41097610487204019dcddd371b
+
 }
 
 void hard_shadow(Raytracer& raytracer,int width,int height){
