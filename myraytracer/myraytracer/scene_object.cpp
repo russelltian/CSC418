@@ -28,7 +28,6 @@ bool UnitSquare::intersect(Ray3D& ray, const Matrix4x4& worldToModel,
     //transform the ray(origin,direction) to object space
     Point3D origin = worldToModel * ray.origin;
     Vector3D direction = worldToModel * ray.dir;
-//    direction.normalize();
     double t = -origin[2]/direction[2];
     
     //invalid intersection
@@ -45,10 +44,8 @@ bool UnitSquare::intersect(Ray3D& ray, const Matrix4x4& worldToModel,
         ray.intersection.point = modelToWorld*p;
         ray.intersection.localPos=p;
         ray.intersection.normal = transNorm(worldToModel, normal);
-//        ray.intersection.none = false; // there is an intersection
         return true;
     }
-    //ray.intersection.none = true;
     return false;
 }
 
@@ -116,15 +113,15 @@ bool UnitCylinder::intersect(Ray3D& ray, const Matrix4x4& worldToModel,
     Vector3D direction = worldToModel * ray.dir;
     direction.normalize();
     
-    //referenced algorithm
+    //referenced algorithm,solve for wall intersection
     double a = direction[0]*direction[0] + direction[1]*direction[1];
     double b = 2*origin[0]*direction[0]+2*origin[1]*direction[1];
     double c = origin[0]*origin[0] + origin[1]*origin[1]- 1;
     double delta = b*b - 4*a*c;
-    //if behind the camera
+    //if no solution,return false
     double threshold =0.00000001;
     if(delta < threshold)return false;
-    
+    //find two root
     double t0 = (-b - sqrt(delta))/(2*a);
     double t1 = (-b + sqrt(delta))/(2*a);
     if(t0>t1){
@@ -132,11 +129,12 @@ bool UnitCylinder::intersect(Ray3D& ray, const Matrix4x4& worldToModel,
         t0 = t1;
         t1 = tmp; //swap
     }
-    if(t0<threshold)return false; //behind camera
+    //always t0 < t1
+    if(t0 < threshold)return false; //behind camera
     bool has_inter = false;
     double z_max = 1;
     double z_min = -1;
-   // bool already_intersect = false;
+    
     //check if hit close or far cap
     double t3 = (z_min - origin[2])/direction[2];
     double t4 = (z_max - origin[2])/direction[2];
@@ -146,7 +144,7 @@ bool UnitCylinder::intersect(Ray3D& ray, const Matrix4x4& worldToModel,
         t3 = t4;
         t4 = tmp;
         swaped = true;
-    }
+    }//t3 always close cap
     //by math, t3<t4, so compute close cap first
     if(t3>threshold ){
         double x3 = origin[0] + t3*direction[0];
@@ -154,7 +152,7 @@ bool UnitCylinder::intersect(Ray3D& ray, const Matrix4x4& worldToModel,
         if (x3*x3+y3*y3 <= 1) {
             Point3D p(origin + t3*direction);
             Vector3D normal(0,0,-1);
-            if (swaped) normal = -1* normal;
+            if (swaped) normal = -1* normal; //rotation, so normal should be flipped
             ray.intersection.localPos = p;
             ray.intersection.t_value =t3;
             ray.intersection.point = modelToWorld*p;
@@ -162,7 +160,6 @@ bool UnitCylinder::intersect(Ray3D& ray, const Matrix4x4& worldToModel,
             return true;
         }
     }
-    //then far cap
   /*  if(t4> threshold){
         double x4 = origin[0] + t4*direction[0];
         double y4 = origin[1] + t4*direction[1];
@@ -217,7 +214,7 @@ bool UnitCylinder::intersect(Ray3D& ray, const Matrix4x4& worldToModel,
         if (x4*x4+y4*y4 <= 1) {
             Point3D p(origin + t4*direction);
             Vector3D normal(0,0,1);
-            if (swaped) normal = -1* normal;
+            if (swaped) normal = -1* normal; //rotation, so normal should be flipped
             ray.intersection.localPos = p;
             ray.intersection.t_value =t4;
             ray.intersection.point = modelToWorld*p;
@@ -231,6 +228,7 @@ bool UnitCylinder::intersect(Ray3D& ray, const Matrix4x4& worldToModel,
 
 
 //added to compute triangle intersection, to find mesh
+//referenced online algorithm
 bool UnitTriangle::intersect(Ray3D& ray, const Matrix4x4& worldToModel,
                              const Matrix4x4& modelToWorld) {
     //transform to object space
@@ -238,11 +236,7 @@ bool UnitTriangle::intersect(Ray3D& ray, const Matrix4x4& worldToModel,
     Vector3D direction = worldToModel * ray.dir;
     direction.normalize();
     double threshold = 0.00000001;
-    //define three point vector
-//   Vector3D p1(origin[0]-0.75983,origin[1]-0.658035,0);//left
-//   Vector3D p2(0,origin[1]+0.658035,0);//up
-//   Vector3D p3(origin[0]+0.75983,origin[1]-0.658035,0);//right
-  //  std::cout << direction <<std::endl;
+    //points
     Vector3D p1(-0.75983,-0.658035,0);//left
     Vector3D p2(0,0.658035,0);//up
     Vector3D p3(0.75983,-0.658035,0);//right
@@ -254,7 +248,6 @@ bool UnitTriangle::intersect(Ray3D& ray, const Matrix4x4& worldToModel,
 
 
     if(det < threshold && det > -threshold) return false;
-   // if(fabs(det) < threshold) return false;
     double invDet = 1/det;
     Vector3D ori_vec(origin[0],origin[1],origin[2]);
     // Vector3D ori_vec(0,0,0);

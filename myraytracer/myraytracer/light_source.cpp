@@ -82,14 +82,9 @@ void PointLight::shade(Ray3D& ray) {
     ray.col = ray.col + out;
 }
 
+// acturally identical with pointlight::shade, since it's an approximation of
+// multiple point lights
 void AreaLight::shade(Ray3D& ray){
-    // TODO: implement this function to fill in values for ray.col
-    // using phong shading.  Make sure your vectors are normalized, and
-    // clamp colour values to 1.0.
-    //
-    // It is assumed at this point that the intersection information in ray
-    // is available.  So be sure that traverseScene() is called on the ray
-    // before this function.
     
     //we need to have incident light, reflect light, and normal vector
     //incident light
@@ -155,6 +150,7 @@ void AreaLight::shade(Ray3D& ray){
     ray.col = ray.col + out;
 }
 
+//uniformly distributed area light
 Point3D AreaLight::get_many_position(int i,int j)const{
     // double location = rand()/(RAND_MAX + 1.); //0-1 random location
     //use random location in the specific range times the light plane
