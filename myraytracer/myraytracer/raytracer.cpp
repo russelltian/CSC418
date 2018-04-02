@@ -222,7 +222,7 @@ void Raytracer::render_dof(Camera& camera, Scene& scene, LightList& light_list, 
     //in DoF, we are averaging the color, so we abandon anti-aliasing,
     //otherwise the algo would be O(N^4), now is O(N^3)
     int num_per_pixel_row = 1; // pow(0.5) to the num of random ray per pixel
-    double interval = 0.01; // lens postion interval
+    double interval = 0.1; // lens postion interval
     double low_high = 0.1; //lower and upper bound
     // Construct a ray for each pixel.
     for (int i = 0; i < image.height; i++) {
