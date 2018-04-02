@@ -121,20 +121,20 @@ void init(){
     //    scene.push_back(lens);
     //
     //    SceneNode* plane = new SceneNode(new UnitSquare(), &woodMat);
-    //    scene.push_back(plane);
+      //  scene.push_back(plane);
     //
     //    SceneNode* chro = new SceneNode(new UnitSphere(), &ranColor);
     //    scene.push_back(chro);
     
     SceneNode* sphere = new SceneNode(new UnitSphere(), gold);
-    //    scene.push_back(sphere);
+       // scene.push_back(sphere);
     SceneNode* lens = new SceneNode(new UnitSphere(), glass);
-    //    scene.push_back(lens);
+      //  scene.push_back(lens);
     SceneNode* plane = new SceneNode(new UnitSquare(), jade);
-    /// scene.push_back(plane);
+     scene.push_back(plane);
     
     //added a cylinder
-    SceneNode* cylinder = new SceneNode(new UnitCylinder(),rainbowMat);
+    SceneNode* cylinder = new SceneNode(new UnitCylinder(),gold);
     scene.push_back(cylinder);
     // Apply some transformations to the sphere and unit square.
     //RTS
@@ -153,10 +153,10 @@ void init(){
     plane->translate(Vector3D(0, 0, -7));
     plane->scale(Point3D(0,0,0), factor2);
     
-    double cyl_factor[3] = { 1.0, 1.0, 1.0 };
-    cylinder->translate(Vector3D(0, 0, -5));
-    cylinder->rotate('y', 90);
-    //    cylinder->scale(Point3D(0,0,0), cyl_factor);
+    double cyl_factor[3] = {0.4,0.4,0.8};
+    cylinder->translate(Vector3D(1, 1, -4));
+    cylinder->rotate('y',60 );
+    cylinder->scale(Point3D(0,0,0), cyl_factor);
     
     //    double factor3[3] = { 2.0, 1.0, 1.0 };
     //    sphere2->translate(Vector3D(0, 1.5, -7));
@@ -281,7 +281,7 @@ int main(int argc, char* argv[])
         height = atoi(argv[2]);
     }
     init();
-    hard_shadow(raytracer,width,height);
+    soft_shadow(raytracer,width,height);
     
     return 0;
 }
