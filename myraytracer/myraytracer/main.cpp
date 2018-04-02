@@ -79,7 +79,7 @@ void init(){
         std::cout<<"error loading texture"<<std::endl;
     }
     
-    Material woodMat(Color(0, 0, 0), Color(0.75164,0.60648,0.22648),
+    Material *woodMat = new Material(Color(0, 0, 0), Color(0.75164,0.60648,0.22648),
                      Color(0.628281, 0.555802, 0.366065),
                      51.2,0.0,1.0,wood);
     
@@ -110,6 +110,21 @@ void init(){
                                         Color(0, 0, 0),
                                         51.2,0.0,1.0,rainbow);
     
+    
+    //russell's addition
+    unsigned char* universe[3];
+    for(unsigned i=0;i<3;i++){
+        universe[i]=new unsigned char();
+    }
+    read=bmp_read ( "universe.bmp", twidth, theight,&universe[0], &universe[1], &universe[2]);
+    if(read){
+        std::cout<<"error loading texture"<<std::endl;
+    }
+    
+    Material *universeMat = new Material(Color(0, 0, 0), Color(0, 0, 0),
+                       Color(0, 0, 0),
+                       51.2,0.0,1.0,universe);
+    
     // Add a unit square into the scene with material mat.
     //    SceneNode* sphere = new SceneNode(new UnitSphere(), &rainbowMat);
     //    scene.push_back(sphere);
@@ -130,14 +145,20 @@ void init(){
        // scene.push_back(sphere);
     SceneNode* lens = new SceneNode(new UnitSphere(), glass);
       //  scene.push_back(lens);
-    SceneNode* plane = new SceneNode(new UnitSquare(), jade);
-     scene.push_back(plane);
+    SceneNode* plane = new SceneNode(new UnitSquare(),jade );
+    scene.push_back(plane);
     
     //added a cylinder
     SceneNode* cylinder = new SceneNode(new UnitCylinder(),gold);
-    scene.push_back(cylinder);
+    //scene.push_back(cylinder);
     // Apply some transformations to the sphere and unit square.
     //RTS
+    //add triangle
+    SceneNode* tri = new SceneNode(new UnitTriangle(),gold);
+    scene.push_back(tri);
+
+    
+    
     double factor1[3] = { 1.0, 2.0, 1.0 };
     sphere->translate(Vector3D(0, 0, -5));
     sphere->rotate('x', -45);
@@ -148,16 +169,23 @@ void init(){
     lens->translate(Vector3D(0, 0, -4));
     lens->scale(Point3D(0,0,0), lensfactor);
     double factor2[3] = { 6.0, 6.0, 1.0 };
-    //    plane->translate(Vector3D(0, 0, -7));
-    //    plane->rotate('z', 45);
     plane->translate(Vector3D(0, 0, -7));
+    //plane->rotate('z', 45);
+   // plane->translate(Vector3D(0, 0, -7));
+    //plane->rotate('x',180 );
+
     plane->scale(Point3D(0,0,0), factor2);
     
     double cyl_factor[3] = {0.4,0.4,0.8};
     cylinder->translate(Vector3D(1, 1, -4));
-    cylinder->rotate('y',60 );
+    //cylinder->rotate('x',45 );
     cylinder->scale(Point3D(0,0,0), cyl_factor);
     
+    double tri_factor[3] = {1.5,2.0,1.0};
+    tri->translate(Vector3D(2, 0, -3));
+    //tri->rotate('x',180 );
+    tri->scale(Point3D(0,0,0), tri_factor);
+
     //    double factor3[3] = { 2.0, 1.0, 1.0 };
     //    sphere2->translate(Vector3D(0, 1.5, -7));
     //    sphere2->rotate('x', -45);

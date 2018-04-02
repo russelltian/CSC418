@@ -38,7 +38,8 @@ bool UnitSquare::intersect(Ray3D& ray, const Matrix4x4& worldToModel,
     
     Point3D p = origin + t*direction;
     Vector3D normal = Vector3D(0,0,1);
-    
+    if(normal.dot(direction)>0.0000001)normal = Vector3D(0,0,-1);
+
     if(p[0] >= -0.5 && p[0] <= 0.5 && p[1] >= -0.5 && p[1] <= 0.5){
         ray.intersection.t_value = t;
         ray.intersection.point = modelToWorld*p;
@@ -147,7 +148,7 @@ bool UnitCylinder::intersect(Ray3D& ray, const Matrix4x4& worldToModel,
         swaped = true;
     }
     //by math, t3<t4, so compute close cap first
-    if(t3>threshold){
+    if(t3>threshold ){
         double x3 = origin[0] + t3*direction[0];
         double y3 = origin[1] + t3*direction[1];
         if (x3*x3+y3*y3 <= 1) {
@@ -210,7 +211,7 @@ bool UnitCylinder::intersect(Ray3D& ray, const Matrix4x4& worldToModel,
         }
     }*/
     //then far cap
-    if(t4> threshold){
+    if(t4> threshold ){
         double x4 = origin[0] + t4*direction[0];
         double y4 = origin[1] + t4*direction[1];
         if (x4*x4+y4*y4 <= 1) {
@@ -227,6 +228,65 @@ bool UnitCylinder::intersect(Ray3D& ray, const Matrix4x4& worldToModel,
     
     return false;
 }
+
+
+//added to compute triangle intersection, to find mesh
+bool UnitTriangle::intersect(Ray3D& ray, const Matrix4x4& worldToModel,
+                             const Matrix4x4& modelToWorld) {
+    //transform to object space
+    Point3D origin = worldToModel * ray.origin;
+    Vector3D direction = worldToModel * ray.dir;
+    direction.normalize();
+    double threshold = 0.00000001;
+    //define three point vector
+//   Vector3D p1(origin[0]-0.75983,origin[1]-0.658035,0);//left
+//   Vector3D p2(0,origin[1]+0.658035,0);//up
+//   Vector3D p3(origin[0]+0.75983,origin[1]-0.658035,0);//right
+  //  std::cout << direction <<std::endl;
+    Vector3D p1(-0.75983,-0.658035,0);//left
+    Vector3D p2(0,0.658035,0);//up
+    Vector3D p3(0.75983,-0.658035,0);//right
+    Vector3D e1 = p2 - p1;
+    Vector3D e2 = p3 - p1;
+
+    Vector3D pvec = direction.cross(e2);
+    double det = e1.dot(pvec);
+
+
+    if(det < threshold && det > -threshold) return false;
+   // if(fabs(det) < threshold) return false;
+    double invDet = 1/det;
+    Vector3D ori_vec(origin[0],origin[1],origin[2]);
+    // Vector3D ori_vec(0,0,0);
+    Vector3D tvec = ori_vec - p1;
+  //  tvec.normalize();
+    double u = tvec.dot(pvec)*invDet;
+    if(u < 0 || u > 1)return false;
+    Vector3D qvec = tvec.cross(e1);
+  //  qvec.normalize();
+    double v = invDet*direction.dot(qvec);
+
+   // std::cout <<v <<" "<<u <<std::endl;
+
+    if(v< 0 || u+v > 1)return false;
+
+
+    double t0 = e2.dot(qvec)*invDet;
+    if(t0 < threshold) return false;
+    Point3D p(origin + t0*direction);
+    Vector3D normal(0,0,1);
+    if(normal.dot(direction)>threshold)normal = Vector3D(0,0,-1);
+   // std::cout << modelToWorld*p <<normal<<std::endl;
+    normal.normalize();
+    ray.intersection.localPos = p;
+    ray.intersection.t_value =t0;
+    ray.intersection.point = modelToWorld*p;
+    ray.intersection.normal = transNorm(worldToModel, normal);
+    //std::cout <<"yeah"<<std::endl;
+    return true;
+}
+
+
 
 void SceneNode::rotate(char axis, double angle) {
     Matrix4x4 rotation;
