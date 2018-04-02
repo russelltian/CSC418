@@ -28,17 +28,17 @@ Scene scene;
 
 void init(){
     Material *gold=new Material(Color(0.3, 0.3, 0.3), Color(0.75164,0.60648,0.22648),
-                  Color(0.628281, 0.555802, 0.366065),
-                  51.2,0.0,1.0,NULL);
+                                Color(0.628281, 0.555802, 0.366065),
+                                51.2,0.0,1.0,NULL);
     Material *ranColor=new Material(Color(0.3, 0.3, 0.3), Color(0.5,0.5,0.5),
-                      Color(0.628281, 0.555802, 0.366065),
-                      51.2,0.0,1.0,NULL);
+                                    Color(0.628281, 0.555802, 0.366065),
+                                    51.2,0.0,1.0,NULL);
     Material *jade=new Material(Color(0, 0, 0), Color(0.54,0.89,0.63),
-                  Color(0.316228,0.316228,0.316228),
-                  12.8,0.0,1.0,NULL);
+                                Color(0.316228,0.316228,0.316228),
+                                12.8,0.0,1.0,NULL);
     Material *glass=new Material(Color(0.3, 0.3, 0.3), Color(0.75164,0.60648,0.22648),
-                   Color(0.316228,0.316228,0.316228),
-                   12.8,1.1,1.0,NULL);
+                                 Color(0.316228,0.316228,0.316228),
+                                 12.8,1.1,1.0,NULL);
     
     unsigned long int* twidth= new unsigned long int();;
     long int* theight=new long int();
@@ -107,6 +107,7 @@ void init(){
     }
     
     Material *rainbowMat = new Material(Color(0, 0, 0), Color(0, 0, 0),
+<<<<<<< HEAD
                         Color(0, 0, 0),
                         51.2,0.0,1.0,rainbow);
     
@@ -132,6 +133,33 @@ void init(){
 //    scene.push_back(lens);
     SceneNode* plane = new SceneNode(new UnitSquare(), jade);
   /// scene.push_back(plane);
+=======
+                                        Color(0, 0, 0),
+                                        51.2,0.0,1.0,rainbow);
+    
+    // Add a unit square into the scene with material mat.
+    //    SceneNode* sphere = new SceneNode(new UnitSphere(), &rainbowMat);
+    //    scene.push_back(sphere);
+    //
+    //    SceneNode* sphere2 = new SceneNode(new UnitSphere(), &auroraMat);
+    //    scene.push_back(sphere2);
+    //
+    //    SceneNode* lens = new SceneNode(new UnitSphere(), &glass);
+    //    scene.push_back(lens);
+    //
+    //    SceneNode* plane = new SceneNode(new UnitSquare(), &woodMat);
+    //    scene.push_back(plane);
+    //
+    //    SceneNode* chro = new SceneNode(new UnitSphere(), &ranColor);
+    //    scene.push_back(chro);
+    
+    SceneNode* sphere = new SceneNode(new UnitSphere(), gold);
+    //    scene.push_back(sphere);
+    SceneNode* lens = new SceneNode(new UnitSphere(), glass);
+    //    scene.push_back(lens);
+    SceneNode* plane = new SceneNode(new UnitSquare(), jade);
+    /// scene.push_back(plane);
+>>>>>>> 7a9132903299ae41097610487204019dcddd371b
     
     //added a cylinder
     SceneNode* cylinder = new SceneNode(new UnitCylinder(),rainbowMat);
@@ -156,6 +184,7 @@ void init(){
     double cyl_factor[3] = { 1.0, 1.0, 1.0 };
     cylinder->translate(Vector3D(0, 0, -5));
     cylinder->rotate('y', 90);
+<<<<<<< HEAD
 //    cylinder->scale(Point3D(0,0,0), cyl_factor);
     
 //    double factor3[3] = { 2.0, 1.0, 1.0 };
@@ -167,6 +196,19 @@ void init(){
 //    double grayfactor[3] = { 1.0, 1.0, 1.0 };
 //    chro->translate(Vector3D(0, 1, -1));
 //    chro->scale(Point3D(0,0,0), grayfactor);
+=======
+    //    cylinder->scale(Point3D(0,0,0), cyl_factor);
+    
+    //    double factor3[3] = { 2.0, 1.0, 1.0 };
+    //    sphere2->translate(Vector3D(0, 1.5, -7));
+    //    sphere2->rotate('x', -45);
+    //    sphere2->rotate('z', 45);
+    //    sphere2->scale(Point3D(0, 0, 0), factor3);
+    //
+    //    double grayfactor[3] = { 1.0, 1.0, 1.0 };
+    //    chro->translate(Vector3D(0, 1, -1));
+    //    chro->scale(Point3D(0,0,0), grayfactor);
+>>>>>>> 7a9132903299ae41097610487204019dcddd371b
 }
 
 void hard_shadow(Raytracer& raytracer,int width,int height){
@@ -203,7 +245,7 @@ void soft_shadow(Raytracer& raytracer,int width,int height){
     //added by us, define a extended area light source to make soft shadowing
     AreaLight* aLight = new AreaLight(Point3D(3,0,5), Color(0.9,0.9,0.9),Vector3D(0.5,0,0),Vector3D(0,0.5,0));
     light_list.push_back(aLight);
-
+    
     // Render the scene, feel free to make the image smaller for
     // testing purposes.
     Camera camera1(Point3D(0, 0, 1), Vector3D(0, 0, -1), Vector3D(0, 1, 0), 60.0);
@@ -242,7 +284,7 @@ void DOF(Raytracer& raytracer,LightList& light_list,Scene& scene,int width,int h
     image1.flushPixelBuffer("view1.bmp"); //save rendered image to file
     
     // Render it from a different point of view.
-   
+    
     Camera camera2(Point3D(4, 2, 1), Vector3D(-4, -2, -6), Vector3D(0, 1, 0), 60.0);
     Image image2(width, height);
     raytracer.render_dof(camera2, scene, light_list, image2,focus_point);
@@ -282,7 +324,7 @@ int main(int argc, char* argv[])
     }
     init();
     hard_shadow(raytracer,width,height);
-
+    
     return 0;
 }
 
