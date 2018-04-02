@@ -106,7 +106,7 @@ void init(){
         std::cout<<"error loading texture"<<std::endl;
     }
     
-    Material rainbowMat(Color(0, 0, 0), Color(0, 0, 0),
+    Material *rainbowMat = new Material(Color(0, 0, 0), Color(0, 0, 0),
                         Color(0, 0, 0),
                         51.2,0.0,1.0,rainbow);
     
@@ -127,11 +127,15 @@ void init(){
 //    scene.push_back(chro);
     
     SceneNode* sphere = new SceneNode(new UnitSphere(), gold);
-    scene.push_back(sphere);
+//    scene.push_back(sphere);
     SceneNode* lens = new SceneNode(new UnitSphere(), glass);
 //    scene.push_back(lens);
     SceneNode* plane = new SceneNode(new UnitSquare(), jade);
-    scene.push_back(plane);
+  /// scene.push_back(plane);
+    
+    //added a cylinder
+    SceneNode* cylinder = new SceneNode(new UnitCylinder(),rainbowMat);
+    scene.push_back(cylinder);
     // Apply some transformations to the sphere and unit square.
     //RTS
     double factor1[3] = { 1.0, 2.0, 1.0 };
@@ -149,6 +153,10 @@ void init(){
     plane->translate(Vector3D(0, 0, -7));
     plane->scale(Point3D(0,0,0), factor2);
     
+    double cyl_factor[3] = { 1.0, 1.0, 1.0 };
+    cylinder->translate(Vector3D(0, 0, -5));
+    cylinder->rotate('y', 90);
+//    cylinder->scale(Point3D(0,0,0), cyl_factor);
     
 //    double factor3[3] = { 2.0, 1.0, 1.0 };
 //    sphere2->translate(Vector3D(0, 1.5, -7));
@@ -165,7 +173,7 @@ void hard_shadow(Raytracer& raytracer,int width,int height){
     
     // Defines a point light source.
     LightList light_list;
-    PointLight* pLight = new PointLight(Point3D(0,0,5), Color(0.9,0.9,0.9));
+    PointLight* pLight = new PointLight(Point3D(3,0,5), Color(0.9,0.9,0.9));
     light_list.push_back(pLight);
     // Render the scene, feel free to make the image smaller for
     // testing purposes.
@@ -193,7 +201,7 @@ void hard_shadow(Raytracer& raytracer,int width,int height){
 void soft_shadow(Raytracer& raytracer,int width,int height){
     LightList light_list;
     //added by us, define a extended area light source to make soft shadowing
-    AreaLight* aLight = new AreaLight(Point3D(3,0,5), Color(0.9,0.9,0.9),Vector3D(0.1,0,0),Vector3D(0,0.1,0));
+    AreaLight* aLight = new AreaLight(Point3D(3,0,5), Color(0.9,0.9,0.9),Vector3D(0.5,0,0),Vector3D(0,0.5,0));
     light_list.push_back(aLight);
 
     // Render the scene, feel free to make the image smaller for
@@ -222,7 +230,7 @@ void soft_shadow(Raytracer& raytracer,int width,int height){
 
 void DOF(Raytracer& raytracer,LightList& light_list,Scene& scene,int width,int height){
     //added by us, define a extended area light source to make soft shadowing
-    AreaLight* aLight = new AreaLight(Point3D(3,0,5), Color(0.9,0.9,0.9),Vector3D(0.1,0,0),Vector3D(0,0.1,0));
+    AreaLight* aLight = new AreaLight(Point3D(3,0,5), Color(0.9,0.9,0.9),Vector3D(0.05,0,0),Vector3D(0,0.05,0));
     light_list.push_back(aLight);
     
     // Render the scene, feel free to make the image smaller for
@@ -273,7 +281,7 @@ int main(int argc, char* argv[])
         height = atoi(argv[2]);
     }
     init();
-    soft_shadow(raytracer,width,height);
+    hard_shadow(raytracer,width,height);
 
     return 0;
 }

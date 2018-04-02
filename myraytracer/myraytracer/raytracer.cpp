@@ -82,8 +82,8 @@ void Raytracer::computeShading(Ray3D& ray, LightList& light_list,Scene& scene) {
         }else if (light->get_type() == 1){
             //area light
             //need to approximate the light source
-            int row = 6; //how many rows of point light
-            int col = 6; //how many cols of point light
+            int row = 4; //how many rows of point light
+            int col = 4; //how many cols of point light
             for(int s = 0;s < row; s++){
                 for(int z=0;z< col; z++){
                     Point3D lightPos = light->get_many_position(s,z); // light position
@@ -155,7 +155,7 @@ void Raytracer::render(Camera& camera, Scene& scene, LightList& light_list, Imag
     viewToWorld = camera.initInvViewMatrix();
     
     //added by us to do anti-aliasing
-    int num_per_pixel_row = 1; // pow(0.5) to the num of random ray per pixel
+    int num_per_pixel_row = 2; // pow(0.5) to the num of random ray per pixel
     
     
     // Construct a ray for each pixel.
