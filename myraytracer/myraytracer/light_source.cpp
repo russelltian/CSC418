@@ -8,6 +8,7 @@
 
 #include <cmath>
 #include "light_source.h"
+#include <random>
 using namespace std;
 void PointLight::shade(Ray3D& ray) {
     // TODO: implement this function to fill in values for ray.col
@@ -71,8 +72,28 @@ void PointLight::shade(Ray3D& ray) {
     ref_ray.normalize(); //double make sure it is normalized
     
     Vector3D V=-ray.dir;  //view vector
+    if(ray.intersection.mat->glossy_idx < 1){
+        Vector3D u = ref_ray.cross(normal);
+        u.normalize();
+        Vector3D v = ref_ray.cross(u);
+        v.normalize();
+        //temp
+        double roughness = ray.intersection.mat->glossy_idx;
+        double theta = 2*M_PI*(rand()*roughness);
+        double phi = 2*M_PI*(rand()*roughness);
+        double x = sin(theta) * cos(phi);
+        double y = sin(theta) * sin(phi);
+        double z = cos(theta);
+        ref_ray = x*u + y*v + z*ref_ray;
+        ref_ray.normalize();
+    }
+    
+    
+    
+    
    // Color ref=powf(fmax(ref_ray.dot(V),0.0),specular_term)*specular;
     Color ref = fmax(0.0,powf(ref_ray.dot(V),specular_term))*specular; // specular color
+    
     
     // final color should also times the light color
     // for example, if light is red, only red should be left
@@ -82,14 +103,9 @@ void PointLight::shade(Ray3D& ray) {
     ray.col = ray.col + out;
 }
 
+// acturally identical with pointlight::shade, since it's an approximation of
+// multiple point lights
 void AreaLight::shade(Ray3D& ray){
-    // TODO: implement this function to fill in values for ray.col
-    // using phong shading.  Make sure your vectors are normalized, and
-    // clamp colour values to 1.0.
-    //
-    // It is assumed at this point that the intersection information in ray
-    // is available.  So be sure that traverseScene() is called on the ray
-    // before this function.
     
     //we need to have incident light, reflect light, and normal vector
     //incident light
@@ -155,6 +171,7 @@ void AreaLight::shade(Ray3D& ray){
     ray.col = ray.col + out;
 }
 
+//uniformly distributed area light
 Point3D AreaLight::get_many_position(int i,int j)const{
     // double location = rand()/(RAND_MAX + 1.); //0-1 random location
     //use random location in the specific range times the light plane

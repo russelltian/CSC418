@@ -40,6 +40,16 @@ void init(){
                                  Color(0.316228,0.316228,0.316228),
                                  12.8,1.1,1.0,NULL);
     
+    // russell's edit, redefine mateiral for glossy effect
+    Material *gold_glossy=new Material(Color(0.3, 0.3, 0.3), Color(0.75164,0.60648,0.22648),
+                                Color(0.628281, 0.555802, 0.366065),
+                                51.2,0.0,0.51,NULL);
+    
+    Material *jade_glossy=new Material(Color(0, 0, 0), Color(0.54,0.89,0.63),
+                                Color(0.316228,0.316228,0.316228),
+                                12.8,0.0,0.50001,NULL);
+    
+    
     unsigned long int* twidth= new unsigned long int();;
     long int* theight=new long int();
     //    unsigned char*** texture=new unsigned char**[3];
@@ -155,8 +165,11 @@ void init(){
     //RTS
     //add triangle
     SceneNode* tri = new SceneNode(new UnitTriangle(),gold);
-    scene.push_back(tri);
-
+    //scene.push_back(tri);
+    SceneNode* sphere1 = new SceneNode(new UnitSphere(), jade_glossy);
+    scene.push_back(sphere1);
+    SceneNode* sphere2 = new SceneNode(new UnitSphere(), gold);
+    scene.push_back(sphere2);
     
     
     double factor1[3] = { 1.0, 2.0, 1.0 };
@@ -186,7 +199,7 @@ void hard_shadow(Raytracer& raytracer,int width,int height){
     
     // Defines a point light source.
     LightList light_list;
-    PointLight* pLight = new PointLight(Point3D(3,0,5), Color(0.9,0.9,0.9));
+    PointLight* pLight = new PointLight(Point3D(0,0,5), Color(0.9,0.9,0.9));
     light_list.push_back(pLight);
     // Render the scene, feel free to make the image smaller for
     // testing purposes.
@@ -214,7 +227,7 @@ void hard_shadow(Raytracer& raytracer,int width,int height){
 void soft_shadow(Raytracer& raytracer,int width,int height){
     LightList light_list;
     //added by us, define a extended area light source to make soft shadowing
-    AreaLight* aLight = new AreaLight(Point3D(3,0,5), Color(0.9,0.9,0.9),Vector3D(0.5,0,0),Vector3D(0,0.5,0));
+    AreaLight* aLight = new AreaLight(Point3D(3,0,5), Color(0.9,0.9,0.9),Vector3D(0.2,0,0),Vector3D(0,0.2,0));
     light_list.push_back(aLight);
     
     // Render the scene, feel free to make the image smaller for
@@ -241,8 +254,9 @@ void soft_shadow(Raytracer& raytracer,int width,int height){
 }
 
 
-void DOF(Raytracer& raytracer,LightList& light_list,Scene& scene,int width,int height){
+void DOF(Raytracer& raytracer,int width,int height){
     //added by us, define a extended area light source to make soft shadowing
+    LightList light_list;
     AreaLight* aLight = new AreaLight(Point3D(3,0,5), Color(0.9,0.9,0.9),Vector3D(0.05,0,0),Vector3D(0,0.05,0));
     light_list.push_back(aLight);
     

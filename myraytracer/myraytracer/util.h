@@ -129,7 +129,7 @@ std::ostream& operator <<(std::ostream& o, const Color& c);
 struct Material {
     Material(Color ambient, Color diffuse, Color specular, double exp,double focu,double alph,unsigned char* texturein[3]) :
     ambient(ambient), diffuse(diffuse), specular(specular),
-    specular_exp(exp),eta(focu),alpha(alph) {
+    specular_exp(exp),eta(focu),glossy_idx(alph) {
         if(texturein){
             texture[0]=texturein[0];
             texture[1]=texturein[1];
@@ -152,7 +152,7 @@ struct Material {
     double specular_exp;
     
     double eta;
-    double alpha;
+    double glossy_idx;
     unsigned char* texture[3];
 };
 
