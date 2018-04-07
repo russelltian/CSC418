@@ -83,8 +83,8 @@ void Raytracer::computeShading(Ray3D& ray, LightList& light_list,Scene& scene) {
         }else if (light->get_type() == 1){
             //area light
             //need to approximate the light source
-            int row = 4; //how many rows of point light
-            int col = 4; //how many cols of point light
+            int row = 2; //how many rows of point light
+            int col = 2; //how many cols of point light
             for(int s = 0;s < row; s++){
                 for(int z=0;z< col; z++){
                     Point3D lightPos = light->get_many_position(s,z); //specified point light position

@@ -18,6 +18,8 @@
 #include "bmp_io.h"
 #include "scene_object.h"
 #include "util.h"
+#include "tiny_obj_loader.h"
+
 using namespace std;
 
 // Define materials for shading.
@@ -152,7 +154,7 @@ void init(){
 //    scene.push_back(chro);
     
     SceneNode* sphere = new SceneNode(new UnitSphere(), gold);
-//    scene.push_back(sphere);
+   // scene.push_back(sphere);
     SceneNode* lens = new SceneNode(new UnitSphere(), glass);
 //    scene.push_back(lens);
     SceneNode* plane = new SceneNode(new UnitSquare(), jade);
@@ -189,10 +191,38 @@ void init(){
 
     plane->scale(Point3D(0,0,0), factor2);
     
-    double cyl_factor[3] = { 1.0, 1.0, 1.0 };
+    double cyl_factor[3] = {1.0,1.0,1.0};
     cylinder->translate(Vector3D(0, 0, -5));
-    cylinder->rotate('y', 90);
+    cylinder->rotate('y',45 );
+    cylinder->rotate('x',45 );
 
+    cylinder->scale(Point3D(0,0,0), cyl_factor);
+    
+    double tri_factor[3] = {1.5,2.0,1.0};
+    tri->translate(Vector3D(2, 0, -3));
+    //tri->rotate('x',180 );
+    tri->scale(Point3D(0,0,0), tri_factor);
+
+    //temp delete later
+    double temp_factor[3] = {0.5,0.5,0.5};
+    sphere1->translate(Vector3D(1, 1, -5));
+    sphere1->rotate('x', -45);
+    sphere1->rotate('z', 45);
+   // sphere1->scale(Point3D(0, 0, 0), temp_factor);
+    sphere2->translate(Vector3D(-1, -1, -5));
+    sphere2->rotate('x', -45);
+    sphere2->rotate('z', 45);
+   // sphere2->scale(Point3D(0, 0, 0), temp_factor);
+  
+    //    double factor3[3] = { 2.0, 1.0, 1.0 };
+    //    sphere2->translate(Vector3D(0, 1.5, -7));
+    //    sphere2->rotate('x', -45);
+    //    sphere2->rotate('z', 45);
+    //    sphere2->scale(Point3D(0, 0, 0), factor3);
+    //
+    //    double grayfactor[3] = { 1.0, 1.0, 1.0 };
+    //    chro->translate(Vector3D(0, 1, -1));
+    //    chro->scale(Point3D(0,0,0), grayfactor);
 }
 
 void hard_shadow(Raytracer& raytracer,int width,int height){

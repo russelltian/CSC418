@@ -40,6 +40,7 @@
 		45DD8BC6206173A800BBDABE /* scene_object.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = scene_object.h; sourceTree = "<group>"; };
 		45DD8BC8206173D900BBDABE /* util.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = util.cpp; sourceTree = "<group>"; };
 		45DD8BC9206173D900BBDABE /* util.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = util.h; sourceTree = "<group>"; };
+		7CE91D58207853CD00CC6A32 /* tiny_obj_loader.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = tiny_obj_loader.h; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -72,6 +73,7 @@
 		45DD8BB42061710C00BBDABE /* myraytracer */ = {
 			isa = PBXGroup;
 			children = (
+				7CE91D58207853CD00CC6A32 /* tiny_obj_loader.h */,
 				45DD8BB52061710C00BBDABE /* main.cpp */,
 				45DD8BBC2061729700BBDABE /* light_source.cpp */,
 				45DD8BBD2061729700BBDABE /* light_source.h */,
