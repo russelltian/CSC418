@@ -260,7 +260,7 @@ bool UnitTriangle::intersect(Ray3D& ray, const Matrix4x4& worldToModel,
     double v = invDet*direction.dot(qvec);
 
    // std::cout <<v <<" "<<u <<std::endl;
-
+    
     if(v< 0 || u+v > 1)return false;
 
 

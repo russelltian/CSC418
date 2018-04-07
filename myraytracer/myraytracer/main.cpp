@@ -40,6 +40,16 @@ void init(){
                                  Color(0.316228,0.316228,0.316228),
                                  12.8,1.1,1.0,NULL);
     
+    // russell's edit, redefine mateiral for glossy effect
+    Material *gold_glossy=new Material(Color(0.3, 0.3, 0.3), Color(0.75164,0.60648,0.22648),
+                                Color(0.628281, 0.555802, 0.366065),
+                                51.2,0.0,0.51,NULL);
+    
+    Material *jade_glossy=new Material(Color(0, 0, 0), Color(0.54,0.89,0.63),
+                                Color(0.316228,0.316228,0.316228),
+                                12.8,0.0,0.50001,NULL);
+    
+    
     unsigned long int* twidth= new unsigned long int();;
     long int* theight=new long int();
     //    unsigned char*** texture=new unsigned char**[3];
@@ -142,7 +152,7 @@ void init(){
     //    scene.push_back(chro);
     
     SceneNode* sphere = new SceneNode(new UnitSphere(), gold);
-    scene.push_back(sphere);
+   // scene.push_back(sphere);
     SceneNode* lens = new SceneNode(new UnitSphere(), glass);
       //  scene.push_back(lens);
     SceneNode* plane = new SceneNode(new UnitSquare(),jade );
@@ -156,7 +166,10 @@ void init(){
     //add triangle
     SceneNode* tri = new SceneNode(new UnitTriangle(),gold);
     //scene.push_back(tri);
-
+    SceneNode* sphere1 = new SceneNode(new UnitSphere(), jade_glossy);
+    scene.push_back(sphere1);
+    SceneNode* sphere2 = new SceneNode(new UnitSphere(), gold);
+    scene.push_back(sphere2);
     
     
     double factor1[3] = { 1.0, 2.0, 1.0 };
@@ -176,9 +189,11 @@ void init(){
 
     plane->scale(Point3D(0,0,0), factor2);
     
-    double cyl_factor[3] = {0.4,0.4,0.8};
-    cylinder->translate(Vector3D(1, 1, -4));
-    //cylinder->rotate('x',45 );
+    double cyl_factor[3] = {1.0,1.0,1.0};
+    cylinder->translate(Vector3D(0, 0, -5));
+    cylinder->rotate('y',45 );
+    cylinder->rotate('x',45 );
+
     cylinder->scale(Point3D(0,0,0), cyl_factor);
     
     double tri_factor[3] = {1.5,2.0,1.0};
@@ -186,6 +201,17 @@ void init(){
     //tri->rotate('x',180 );
     tri->scale(Point3D(0,0,0), tri_factor);
 
+    //temp delete later
+    double temp_factor[3] = {0.5,0.5,0.5};
+    sphere1->translate(Vector3D(1, 1, -5));
+    sphere1->rotate('x', -45);
+    sphere1->rotate('z', 45);
+   // sphere1->scale(Point3D(0, 0, 0), temp_factor);
+    sphere2->translate(Vector3D(-1, -1, -5));
+    sphere2->rotate('x', -45);
+    sphere2->rotate('z', 45);
+   // sphere2->scale(Point3D(0, 0, 0), temp_factor);
+  
     //    double factor3[3] = { 2.0, 1.0, 1.0 };
     //    sphere2->translate(Vector3D(0, 1.5, -7));
     //    sphere2->rotate('x', -45);
@@ -301,8 +327,8 @@ int main(int argc, char* argv[])
     //int height = 240;
     
     //for testing purpose
-    int width = 320;
-    int height = 240;
+    int width = 640;
+    int height = 480;
     
     
     if (argc == 3) {
@@ -310,7 +336,7 @@ int main(int argc, char* argv[])
         height = atoi(argv[2]);
     }
     init();
-    DOF(raytracer,width,height);
+    soft_shadow(raytracer,width,height);
     
     return 0;
 }
