@@ -50,10 +50,8 @@ void init(){
     Material *jade_glossy=new Material(Color(0, 0, 0), Color(0.54,0.89,0.63),
                                 Color(0.316228,0.316228,0.316228),
                                 12.8,0.0,0.15,NULL);
-    //added by russell,
-    Material *mirror=new Material(Color(0, 0, 0), Color(0,0,0),Color(1,1,1),
-        12.8,0.0,2,NULL);
-
+    
+    
     
     unsigned long int* twidth= new unsigned long int();;
     long int* theight=new long int();
@@ -150,7 +148,7 @@ void init(){
     
     
     //load obj file here
-    std::string inputfile = "David2.obj";
+    std::string inputfile = "cube.obj";
     tinyobj::attrib_t attrib;
     std::vector<tinyobj::shape_t> shapes;
     std::vector<tinyobj::material_t> materials;
@@ -187,10 +185,10 @@ void init(){
                 }
                 SceneNode* thisT = new SceneNode(new Triangle(thisTri[0],thisTri[1],thisTri[2]),jade);
                 //order:TRS
-				thisT->translate(Vector3D(0,-3,-5));
+                thisT->translate(Vector3D(0,-3,-5));
 //                thisT->rotate('y',45);
-				//thisT->rotate('x',90);
-                double Tfactor[3] = { 0.009, 0.009, 0.009 };
+                //thisT->rotate('x',90);
+                double Tfactor[3] = { 1, 1, 1 };
                 thisT->scale(Point3D (0,0,0), Tfactor);
                 scene.push_back(thisT);
                 
@@ -219,28 +217,12 @@ void init(){
     }
     
     
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
+    //standard objects in the scene by default
     
     SceneNode* sphere = new SceneNode(new UnitSphere(), gold);
    // scene.push_back(sphere);
     SceneNode* lens = new SceneNode(new UnitSphere(), glass);
-//    scene.push_back(lens);
+   // scene.push_back(lens);
     SceneNode* plane = new SceneNode(new UnitSquare(), jade);
     scene.push_back(plane);
     
@@ -257,11 +239,8 @@ void init(){
     //all temporary, can delete at any time
     
     SceneNode* sphere2 = new SceneNode(new UnitSphere(), gold);
-    scene.push_back(sphere2);
-    SceneNode* sphere1 = new SceneNode(new UnitSphere(), jade_glossy);
-    scene.push_back(sphere1);
-   SceneNode* mirror_plane = new SceneNode(new UnitSquare(), mirror);
-   // scene.push_back(mirror_plane);
+//    scene.push_back(sphere2);
+    
     
     double factor1[3] = { 1.0, 2.0, 1.0 };
     sphere->translate(Vector3D(0, 0, -5));
@@ -286,26 +265,13 @@ void init(){
     cylinder->rotate('x',60 );
     cylinder->scale(Point3D(0,0,0), cyl_factor);
     
-
-    //temp delete later
-    double temp_factor[3] = {0.5,0.5,0.5};
-    sphere1->translate(Vector3D(1, 1, -5));
-    sphere1->rotate('x', -45);
-    sphere1->rotate('z', 45);
-    //sphere1->scale(Point3D(0, 0, 0), temp_factor);
-    sphere2->translate(Vector3D(-1, -1, -5));
-    sphere2->rotate('x', -45);
-    sphere2->rotate('z', 45);
-   // sphere2->scale(Point3D(0, 0, 0), temp_factor);
-    mirror_plane->translate(Vector3D(0, 0, -10));
-    mirror_plane->scale(Point3D(0,0,0), factor2);
 }
 
 void hard_shadow(Raytracer& raytracer,int width,int height){
     
     // Defines a point light source.
     LightList light_list;
-//    PointLight* pLight = new PointLight(Point3D(0,0,5), Color(0.9,0.9,0.9));
+//  PointLight* pLight = new PointLight(Point3D(0,0,5), Color(0.9,0.9,0.9));
     PointLight* pLight = new PointLight(Point3D(-5,-5,10), Color(0.9,0.9,0.9));
     light_list.push_back(pLight);
     
@@ -322,14 +288,14 @@ void hard_shadow(Raytracer& raytracer,int width,int height){
  //   Image image1(width, height);
  //   raytracer.render(camera1, scene, light_list, image1); //render 3D scene to image
  //   image1.flushPixelBuffer("view1.bmp"); //save rendered image to file
-	//std::cout << "finished View1" << std::endl;
+    //std::cout << "finished View1" << std::endl;
     // Render it from a different point of view.
 //    Camera camera2(Point3D(4, 2, 1), Vector3D(-4, -2, -6), Vector3D(0, 1, 0), 60.0);
     Camera camera2(Point3D(0, -10, 3), Vector3D(0, 10, -3), Vector3D(0, 1, 0), 60.0);
     Image image2(width, height);
     raytracer.render(camera2, scene, light_list, image2);
     image2.flushPixelBuffer("view2.bmp");
-	std::cout << "finished View2" << std::endl;
+    std::cout << "finished View2" << std::endl;
     // Free memory
     for (size_t i = 0; i < scene.size(); ++i) {
         delete scene[i];
@@ -425,7 +391,7 @@ int main(int argc, char* argv[])
     }
     init();
     clock_t timeStart = clock();
-    hard_shadow(raytracer,width,height);
+    soft_shadow(raytracer,width,height);
     clock_t timeEnd = clock();
     printf("render time: %04.2f (sec)\n",(double)(timeEnd - timeStart) / CLOCKS_PER_SEC);//print run time
     return 0;

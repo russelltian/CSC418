@@ -56,7 +56,7 @@ void Raytracer::computeTransforms(Scene& scene) {
         }else if(node->firstTouch){
             node->modelToWorld = node->trans*node->modelToWorld;
             node->worldToModel = node->worldToModel*node->invtrans;
-			node->firstTouch = false;
+            node->firstTouch = false;
         }
         
     }
@@ -155,11 +155,11 @@ void Raytracer::render(Camera& camera, Scene& scene, LightList& light_list, Imag
     
     Matrix4x4 viewToWorld;
     double factor = (double(image.height)/2)/tan(camera.fov*M_PI/360.0);
-    
+
     viewToWorld = camera.initInvViewMatrix();
     
     //added by us to do anti-aliasing
-    int num_per_pixel_row = 2; // pow(0.5) to the num of random ray per pixel
+    int num_per_pixel_row = 3; // pow(0.5) to the num of random ray per pixel
     
     
     // Construct a ray for each pixel.
