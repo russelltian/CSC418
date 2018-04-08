@@ -7,7 +7,6 @@
  
  ***********************************************************/
 
-
 #include "raytracer.h"
 #include <cmath>
 #include <iostream>
@@ -51,8 +50,15 @@ void Raytracer::computeTransforms(Scene& scene) {
     for (size_t i = 0; i < scene.size(); ++i) {
         SceneNode* node = scene[i];
         
-        node->modelToWorld = node->trans;
-        node->worldToModel = node->invtrans;
+        if(!node->ismesh){
+            node->modelToWorld = node->trans;
+            node->worldToModel = node->invtrans;
+        }else if(node->firstTouch){
+            node->modelToWorld = node->trans*node->modelToWorld;
+            node->worldToModel = node->worldToModel*node->invtrans;
+			node->firstTouch = false;
+        }
+        
     }
 }
 
@@ -83,8 +89,8 @@ void Raytracer::computeShading(Ray3D& ray, LightList& light_list,Scene& scene) {
         }else if (light->get_type() == 1){
             //area light
             //need to approximate the light source
-            int row = 2; //how many rows of point light
-            int col = 2; //how many cols of point light
+            int row = 1; //how many rows of point light
+            int col = 1; //how many cols of point light
             for(int s = 0;s < row; s++){
                 for(int z=0;z< col; z++){
                     Point3D lightPos = light->get_many_position(s,z); //specified point light position

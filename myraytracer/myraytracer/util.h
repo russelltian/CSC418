@@ -37,6 +37,7 @@ class Vector3D {
     Vector3D();
     Vector3D(double x, double y, double z);
     Vector3D(const Vector3D& other);
+    Vector3D(const Point3D& p);
     
     Vector3D& operator =(const Vector3D& other);
     double& operator[](int i);
@@ -92,7 +93,7 @@ class Matrix4x4 {
     
     Matrix4x4 transpose() const;
     
-    private:
+//    private:
     double m_data[16];
 };
 

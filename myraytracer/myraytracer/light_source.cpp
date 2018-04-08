@@ -5,7 +5,6 @@
  Implements light_source.h
  
  ***********************************************************/
-
 #include <cmath>
 #include "light_source.h"
 #include <random>
@@ -65,7 +64,8 @@ void PointLight::shade(Ray3D& ray) {
     
     
    //calculate diffuse color
-    Color diff=fmax(normal.dot(inci_ray),0.0)*diffuse;
+//    Color diff=fmax(normal.dot(inci_ray),0.0)*diffuse;
+    Color diff=abs(normal.dot(inci_ray))*diffuse;
     
     //find reflection ray equals to 2(R.N)N - L
     Vector3D ref_ray=2*(normal.dot(inci_ray)*normal)-inci_ray;
