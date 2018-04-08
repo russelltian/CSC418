@@ -11,6 +11,7 @@
  Starter code for Assignment 3
  
  ***********************************************************/
+#define TINYOBJLOADER_IMPLEMENTATION // define this in only *one* .cc
 
 #include <cstdlib>
 #include "raytracer.h"
@@ -31,7 +32,7 @@ void init(){
     Material *gold=new Material(Color(0.3, 0.3, 0.3), Color(0.75164,0.60648,0.22648),
                                 Color(0.628281, 0.555802, 0.366065),
                                 51.2,0.0,1.0,NULL);
-    Material *ranColor=new Material(Color(0.3, 0.3, 0.3), Color(0.5,0.5,0.5),
+    Material *ranColor=new Material(Color(0.3, 0.3, 0.3), Color(0.9,0.9,0.9),
                                     Color(0.628281, 0.555802, 0.366065),
                                     51.2,0.0,1.0,NULL);
     Material *jade = new Material(Color(0, 0, 0), Color(0.54,0.89,0.63),
@@ -66,7 +67,7 @@ void init(){
         std::cout<<"error loading texture"<<std::endl;
     }
     
-    Material waveMat(Color(0, 0, 0), Color(0.75164,0.60648,0.22648),
+    Material* waveMat=new Material(Color(0, 0, 0), Color(0.75164,0.60648,0.22648),
                      Color(0.628281, 0.555802, 0.366065),
                      51.2,0.0,1.0,wave);
     
@@ -80,7 +81,7 @@ void init(){
         std::cout<<"error loading texture"<<std::endl;
     }
     
-    Material gridMat(Color(0, 0, 0), Color(0.75164,0.60648,0.22648),
+    Material* gridMat = new Material(Color(0, 0, 0), Color(0.75164,0.60648,0.22648),
                      Color(0.628281, 0.555802, 0.366065),
                      51.2,0.0,1.0,grid);
     
@@ -125,35 +126,116 @@ void init(){
                         51.2,0.0,1.0,rainbow);
     
     
-    //russell's addition
-    unsigned char* universe[3];
-    for(unsigned i=0;i<3;i++){
-        universe[i]=new unsigned char();
-    }
-    read=bmp_read ( "universe.bmp", twidth, theight,&universe[0], &universe[1], &universe[2]);
-    if(read){
-        std::cout<<"error loading texture"<<std::endl;
+//    //russell's addition
+//    unsigned char* universe[3];
+//    for(unsigned i=0;i<3;i++){
+//        universe[i]=new unsigned char();
+//    }
+//    read=bmp_read ( "universe.bmp", twidth, theight,&universe[0], &universe[1], &universe[2]);
+//    if(read){
+//        std::cout<<"error loading texture"<<std::endl;
+//    }
+//
+//    Material *universeMat = new Material(Color(0, 0, 0), Color(0, 0, 0),
+//                       Color(0, 0, 0),
+//                       51.2,0.0,1.0,universe);
+    
+//test the triangle shape
+    
+//    SceneNode* myT = new SceneNode(new Triangle(Point3D(0,0,-3),Point3D(2,0,-5),Point3D(0,4,-5)),jade);
+//    scene.push_back(myT);
+    
+    
+    
+    
+    
+    //load obj file here
+    std::string inputfile = "David2.obj";
+    tinyobj::attrib_t attrib;
+    std::vector<tinyobj::shape_t> shapes;
+    std::vector<tinyobj::material_t> materials;
+    
+    std::string err;
+    bool ret = tinyobj::LoadObj(&attrib, &shapes, &materials, &err, inputfile.c_str());
+    
+    if (!err.empty()) { // `err` may contain warning message.
+        std::cerr << err << std::endl;
     }
     
-    Material *universeMat = new Material(Color(0, 0, 0), Color(0, 0, 0),
-                       Color(0, 0, 0),
-                       51.2,0.0,1.0,universe);
+    if (!ret) {
+        exit(1);
+    }
     
-    // Add a unit square into the scene with material mat.
-//    SceneNode* sphere = new SceneNode(new UnitSphere(), &rainbowMat);
-//    scene.push_back(sphere);
-//
-//    SceneNode* sphere2 = new SceneNode(new UnitSphere(), &auroraMat);
-//    scene.push_back(sphere2);
-//
-//    SceneNode* lens = new SceneNode(new UnitSphere(), &glass);
-//    scene.push_back(lens);
-//
-//    SceneNode* plane = new SceneNode(new UnitSquare(), &woodMat);
-//    scene.push_back(plane);
-//
-//    SceneNode* chro = new SceneNode(new UnitSphere(), &ranColor);
-//    scene.push_back(chro);
+    // Loop over shapes
+    for (size_t s = 0; s < shapes.size(); s++) {
+        // Loop over faces(polygon)
+        size_t index_offset = 0;
+        for (size_t f = 0; f < shapes[s].mesh.num_face_vertices.size(); f++) {
+            int fv = shapes[s].mesh.num_face_vertices[f];
+            
+            // Loop over vertices in the face.
+            for (size_t v = 0; v < fv;) {
+                Point3D thisTri[3];
+                for(int i=0;i<3;i++){
+                    tinyobj::index_t idx = shapes[s].mesh.indices[index_offset + v];
+                    double vx = attrib.vertices[3*idx.vertex_index+0];
+                    double vy = attrib.vertices[3*idx.vertex_index+1];
+                    double vz = attrib.vertices[3*idx.vertex_index+2];
+                    
+                    thisTri[i]=Point3D(vx,vy,vz);
+                    v++;
+                }
+                SceneNode* thisT = new SceneNode(new Triangle(thisTri[0],thisTri[1],thisTri[2]),jade);
+                //order:TRS
+				thisT->translate(Vector3D(0,-3,-5));
+//                thisT->rotate('y',45);
+				//thisT->rotate('x',90);
+                double Tfactor[3] = { 0.009, 0.009, 0.009 };
+                thisT->scale(Point3D (0,0,0), Tfactor);
+                scene.push_back(thisT);
+                
+                
+                
+                // access to vertex
+//                tinyobj::index_t idx = shapes[s].mesh.indices[index_offset + v];
+//                tinyobj::real_t vx = attrib.vertices[3*idx.vertex_index+0];
+//                tinyobj::real_t vy = attrib.vertices[3*idx.vertex_index+1];
+//                tinyobj::real_t vz = attrib.vertices[3*idx.vertex_index+2];
+                //                tinyobj::real_t nx = attrib.normals[3*idx.normal_index+0];
+                //                tinyobj::real_t ny = attrib.normals[3*idx.normal_index+1];
+                //                tinyobj::real_t nz = attrib.normals[3*idx.normal_index+2];
+                //                tinyobj::real_t tx = attrib.texcoords[2*idx.texcoord_index+0];
+                //                tinyobj::real_t ty = attrib.texcoords[2*idx.texcoord_index+1];
+                // Optional: vertex colors
+                // tinyobj::real_t red = attrib.colors[3*idx.vertex_index+0];
+                // tinyobj::real_t green = attrib.colors[3*idx.vertex_index+1];
+                // tinyobj::real_t blue = attrib.colors[3*idx.vertex_index+2];
+            }
+            index_offset += fv;
+            
+            // per-face material
+            shapes[s].mesh.material_ids[f];
+        }
+    }
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
     
     SceneNode* sphere = new SceneNode(new UnitSphere(), gold);
    // scene.push_back(sphere);
@@ -191,7 +273,7 @@ void init(){
     lens->translate(Vector3D(0, 0, -4));
     lens->scale(Point3D(0,0,0), lensfactor);
     double factor2[3] = { 6.0, 6.0, 1.0 };
-    plane->translate(Vector3D(0, 0, -7));
+    plane->translate(Vector3D(0, 0, -5));
     //plane->rotate('z', 45);
    // plane->translate(Vector3D(0, 0, -7));
     //plane->rotate('x',180 );
@@ -223,7 +305,8 @@ void hard_shadow(Raytracer& raytracer,int width,int height){
     
     // Defines a point light source.
     LightList light_list;
-    PointLight* pLight = new PointLight(Point3D(0,0,5), Color(0.9,0.9,0.9));
+//    PointLight* pLight = new PointLight(Point3D(0,0,5), Color(0.9,0.9,0.9));
+    PointLight* pLight = new PointLight(Point3D(-5,-5,10), Color(0.9,0.9,0.9));
     light_list.push_back(pLight);
     
     // temp
@@ -234,17 +317,19 @@ void hard_shadow(Raytracer& raytracer,int width,int height){
     
     // Render the scene, feel free to make the image smaller for
     // testing purposes.
-    Camera camera1(Point3D(0, 0, 1), Vector3D(0, 0, -1), Vector3D(0, 1, 0), 60.0);
-    Image image1(width, height);
-    raytracer.render(camera1, scene, light_list, image1); //render 3D scene to image
-    image1.flushPixelBuffer("view1.bmp"); //save rendered image to file
-    
+//    Camera camera1(Point3D(0, 0, 1), Vector3D(0, 0, -1), Vector3D(0, 1, 0), 60.0);
+ //   Camera camera1(Point3D(0, 0, 5), Vector3D(0, 0, -1), Vector3D(0, 1, 0), 60.0);
+ //   Image image1(width, height);
+ //   raytracer.render(camera1, scene, light_list, image1); //render 3D scene to image
+ //   image1.flushPixelBuffer("view1.bmp"); //save rendered image to file
+	//std::cout << "finished View1" << std::endl;
     // Render it from a different point of view.
-    Camera camera2(Point3D(4, 2, 1), Vector3D(-4, -2, -6), Vector3D(0, 1, 0), 60.0);
+//    Camera camera2(Point3D(4, 2, 1), Vector3D(-4, -2, -6), Vector3D(0, 1, 0), 60.0);
+    Camera camera2(Point3D(0, -10, 3), Vector3D(0, 10, -3), Vector3D(0, 1, 0), 60.0);
     Image image2(width, height);
     raytracer.render(camera2, scene, light_list, image2);
     image2.flushPixelBuffer("view2.bmp");
-    
+	std::cout << "finished View2" << std::endl;
     // Free memory
     for (size_t i = 0; i < scene.size(); ++i) {
         delete scene[i];

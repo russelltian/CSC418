@@ -5,7 +5,6 @@
  Implements scene_object.h
  
  ***********************************************************/
-
 #include <cmath>
 #include "scene_object.h"
 #include <math.h>
@@ -439,5 +438,185 @@ void SceneNode::scale(Point3D origin, double factor[3] ) {
     this->invtrans = scale*this->invtrans;
 }
 
+bool Triangle::intersect(Ray3D& ray, const Matrix4x4& worldToModel,
+                    const Matrix4x4& modelToWorld){
+    Point3D origin = worldToModel * ray.origin;
+    Vector3D direction = worldToModel * ray.dir;
+    double t=-origin[2]/direction[2];
+    if(t<0.0000000001||direction[2] == 0||(!ray.intersection.none&&t>ray.intersection.t_value)){
+        return false;
+    }
+    
+    
+    
+    double u=origin[0]+t*direction[0];
+    double v=origin[1]+t*direction[1];
+    Vector3D normal(0,0,1);
+    Point3D p(u,v,0);
+    if(u>0&&v>0&&(u+v)<=1){
+        ray.intersection.localPos = Point3D(u,v,0);
+        ray.intersection.t_value =t;
+        ray.intersection.point = modelToWorld*p;
+        ray.intersection.normal = transNorm(worldToModel,normal);
+        ray.intersection.normal.normalize();
+        return true;
+    }else{
+        return false;
+    }
+    
+    
+    
+}
 
+Triangle::Triangle(Point3D origin,Point3D iu, Point3D iv){
+    this->o=origin;
+    this->u=iu-origin;
+    this->v=iv-origin;
+}
+
+SceneNode::SceneNode(Triangle* obj, Material* mat){
+    this->obj=obj;
+    this->mat=mat;
+    this->ismesh=true;
+	this->firstTouch = true;
+    Point3D o=obj->o;
+    Vector3D u=obj->u;
+    Vector3D v=obj->v;
+    Vector3D normal=u.cross(v);
+    this->normal=normal;
+    this->normal.normalize();
+    Matrix4x4 P;
+    Matrix4x4 inv;
+    P.m_data[0]=u[0];P.m_data[1]=v[0];P.m_data[2]=normal[0];P.m_data[3]=o[0];
+    P.m_data[4]=u[1];P.m_data[5]=v[1];P.m_data[6]=normal[1];P.m_data[7]=o[1];
+    P.m_data[8]=u[2];P.m_data[9]=v[2];P.m_data[10]=normal[2];P.m_data[11]=o[2];
+    P.m_data[12]=0;P.m_data[13]=0;P.m_data[14]=0;P.m_data[15]=1;
+    this->modelToWorld=P;
+    
+    
+    inv.m_data[0] = P.m_data[5]  * P.m_data[10] * P.m_data[15] -
+    P.m_data[5]  * P.m_data[11] * P.m_data[14] -
+    P.m_data[9]  * P.m_data[6]  * P.m_data[15] +
+    P.m_data[9]  * P.m_data[7]  * P.m_data[14] +
+    P.m_data[13] * P.m_data[6]  * P.m_data[11] -
+    P.m_data[13] * P.m_data[7]  * P.m_data[10];
+    
+    inv.m_data[4] = -P.m_data[4]  * P.m_data[10] * P.m_data[15] +
+    P.m_data[4]  * P.m_data[11] * P.m_data[14] +
+    P.m_data[8]  * P.m_data[6]  * P.m_data[15] -
+    P.m_data[8]  * P.m_data[7]  * P.m_data[14] -
+    P.m_data[12] * P.m_data[6]  * P.m_data[11] +
+    P.m_data[12] * P.m_data[7]  * P.m_data[10];
+    
+    inv.m_data[8] = P.m_data[4]  * P.m_data[9] * P.m_data[15] -
+    P.m_data[4]  * P.m_data[11] * P.m_data[13] -
+    P.m_data[8]  * P.m_data[5] * P.m_data[15] +
+    P.m_data[8]  * P.m_data[7] * P.m_data[13] +
+    P.m_data[12] * P.m_data[5] * P.m_data[11] -
+    P.m_data[12] * P.m_data[7] * P.m_data[9];
+    
+    inv.m_data[12] = -P.m_data[4]  * P.m_data[9] * P.m_data[14] +
+    P.m_data[4]  * P.m_data[10] * P.m_data[13] +
+    P.m_data[8]  * P.m_data[5] * P.m_data[14] -
+    P.m_data[8]  * P.m_data[6] * P.m_data[13] -
+    P.m_data[12] * P.m_data[5] * P.m_data[10] +
+    P.m_data[12] * P.m_data[6] * P.m_data[9];
+    
+    inv.m_data[1] = -P.m_data[1]  * P.m_data[10] * P.m_data[15] +
+    P.m_data[1]  * P.m_data[11] * P.m_data[14] +
+    P.m_data[9]  * P.m_data[2] * P.m_data[15] -
+    P.m_data[9]  * P.m_data[3] * P.m_data[14] -
+    P.m_data[13] * P.m_data[2] * P.m_data[11] +
+    P.m_data[13] * P.m_data[3] * P.m_data[10];
+    
+    inv.m_data[5] = P.m_data[0]  * P.m_data[10] * P.m_data[15] -
+    P.m_data[0]  * P.m_data[11] * P.m_data[14] -
+    P.m_data[8]  * P.m_data[2] * P.m_data[15] +
+    P.m_data[8]  * P.m_data[3] * P.m_data[14] +
+    P.m_data[12] * P.m_data[2] * P.m_data[11] -
+    P.m_data[12] * P.m_data[3] * P.m_data[10];
+    
+    inv.m_data[9] = -P.m_data[0]  * P.m_data[9] * P.m_data[15] +
+    P.m_data[0]  * P.m_data[11] * P.m_data[13] +
+    P.m_data[8]  * P.m_data[1] * P.m_data[15] -
+    P.m_data[8]  * P.m_data[3] * P.m_data[13] -
+    P.m_data[12] * P.m_data[1] * P.m_data[11] +
+    P.m_data[12] * P.m_data[3] * P.m_data[9];
+    
+    inv.m_data[13] = P.m_data[0]  * P.m_data[9] * P.m_data[14] -
+    P.m_data[0]  * P.m_data[10] * P.m_data[13] -
+    P.m_data[8]  * P.m_data[1] * P.m_data[14] +
+    P.m_data[8]  * P.m_data[2] * P.m_data[13] +
+    P.m_data[12] * P.m_data[1] * P.m_data[10] -
+    P.m_data[12] * P.m_data[2] * P.m_data[9];
+    
+    inv.m_data[2] = P.m_data[1]  * P.m_data[6] * P.m_data[15] -
+    P.m_data[1]  * P.m_data[7] * P.m_data[14] -
+    P.m_data[5]  * P.m_data[2] * P.m_data[15] +
+    P.m_data[5]  * P.m_data[3] * P.m_data[14] +
+    P.m_data[13] * P.m_data[2] * P.m_data[7] -
+    P.m_data[13] * P.m_data[3] * P.m_data[6];
+    
+    inv.m_data[6] = -P.m_data[0]  * P.m_data[6] * P.m_data[15] +
+    P.m_data[0]  * P.m_data[7] * P.m_data[14] +
+    P.m_data[4]  * P.m_data[2] * P.m_data[15] -
+    P.m_data[4]  * P.m_data[3] * P.m_data[14] -
+    P.m_data[12] * P.m_data[2] * P.m_data[7] +
+    P.m_data[12] * P.m_data[3] * P.m_data[6];
+    
+    inv.m_data[10] = P.m_data[0]  * P.m_data[5] * P.m_data[15] -
+    P.m_data[0]  * P.m_data[7] * P.m_data[13] -
+    P.m_data[4]  * P.m_data[1] * P.m_data[15] +
+    P.m_data[4]  * P.m_data[3] * P.m_data[13] +
+    P.m_data[12] * P.m_data[1] * P.m_data[7] -
+    P.m_data[12] * P.m_data[3] * P.m_data[5];
+    
+    inv.m_data[14] = -P.m_data[0]  * P.m_data[5] * P.m_data[14] +
+    P.m_data[0]  * P.m_data[6] * P.m_data[13] +
+    P.m_data[4]  * P.m_data[1] * P.m_data[14] -
+    P.m_data[4]  * P.m_data[2] * P.m_data[13] -
+    P.m_data[12] * P.m_data[1] * P.m_data[6] +
+    P.m_data[12] * P.m_data[2] * P.m_data[5];
+    
+    inv.m_data[3] = -P.m_data[1] * P.m_data[6] * P.m_data[11] +
+    P.m_data[1] * P.m_data[7] * P.m_data[10] +
+    P.m_data[5] * P.m_data[2] * P.m_data[11] -
+    P.m_data[5] * P.m_data[3] * P.m_data[10] -
+    P.m_data[9] * P.m_data[2] * P.m_data[7] +
+    P.m_data[9] * P.m_data[3] * P.m_data[6];
+    
+    inv.m_data[7] = P.m_data[0] * P.m_data[6] * P.m_data[11] -
+    P.m_data[0] * P.m_data[7] * P.m_data[10] -
+    P.m_data[4] * P.m_data[2] * P.m_data[11] +
+    P.m_data[4] * P.m_data[3] * P.m_data[10] +
+    P.m_data[8] * P.m_data[2] * P.m_data[7] -
+    P.m_data[8] * P.m_data[3] * P.m_data[6];
+    
+    inv.m_data[11] = -P.m_data[0] * P.m_data[5] * P.m_data[11] +
+    P.m_data[0] * P.m_data[7] * P.m_data[9] +
+    P.m_data[4] * P.m_data[1] * P.m_data[11] -
+    P.m_data[4] * P.m_data[3] * P.m_data[9] -
+    P.m_data[8] * P.m_data[1] * P.m_data[7] +
+    P.m_data[8] * P.m_data[3] * P.m_data[5];
+    
+    inv.m_data[15] = P.m_data[0] * P.m_data[5] * P.m_data[10] -
+    P.m_data[0] * P.m_data[6] * P.m_data[9] -
+    P.m_data[4] * P.m_data[1] * P.m_data[10] +
+    P.m_data[4] * P.m_data[2] * P.m_data[9] +
+    P.m_data[8] * P.m_data[1] * P.m_data[6] -
+    P.m_data[8] * P.m_data[2] * P.m_data[5];
+    
+    double det = P.m_data[0] * inv.m_data[0] + P.m_data[1] * inv.m_data[4] + P.m_data[2] * inv.m_data[8] + P.m_data[3] * inv.m_data[12];
+    
+    if (det == 0)
+        std::cout<<"det < 0"<<std::endl;
+    
+    det = 1.0 / det;
+    
+    for (int i = 0; i < 16; i++)
+        inv.m_data[i] = inv.m_data[i] * det;
+    
+
+    this->worldToModel=inv;
+}
 

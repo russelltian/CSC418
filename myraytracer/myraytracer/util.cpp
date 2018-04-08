@@ -5,7 +5,6 @@
  Implementations of util.h
  
  ***********************************************************/
-
 #include "util.h"
 
 Point3D::Point3D() {
@@ -63,6 +62,12 @@ Vector3D::Vector3D(const Vector3D& other) {
     m_data[0] = other.m_data[0];
     m_data[1] = other.m_data[1];
     m_data[2] = other.m_data[2];
+}
+
+Vector3D::Vector3D(const Point3D& p) {
+    m_data[0] = p[0];
+    m_data[1] = p[1];
+    m_data[2] = p[2];
 }
 
 Vector3D& Vector3D::operator =(const Vector3D& other) {
