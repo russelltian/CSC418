@@ -10,6 +10,11 @@
 #include "light_source.h"
 #include <random>
 using namespace std;
+double random_double(double fMin, double fMax)
+{
+    double f = (double)rand() / RAND_MAX;
+    return fMin + f * (fMax - fMin);
+}
 void PointLight::shade(Ray3D& ray) {
     // TODO: implement this function to fill in values for ray.col
     // using phong shading.  Make sure your vectors are normalized, and
@@ -79,8 +84,8 @@ void PointLight::shade(Ray3D& ray) {
         v.normalize();
         //temp
         double roughness = ray.intersection.mat->glossy_idx;
-        double theta = 2*M_PI*(rand()*roughness);
-        double phi = 2*M_PI*(rand()*roughness);
+        double theta = 2*M_PI*(random_double(0.0,1.0)*roughness);
+        double phi = 2*M_PI*(random_double(0.0,1.0)*roughness);
         double x = sin(theta) * cos(phi);
         double y = sin(theta) * sin(phi);
         double z = cos(theta);
@@ -176,7 +181,19 @@ Point3D AreaLight::get_many_position(int i,int j)const{
     // double location = rand()/(RAND_MAX + 1.); //0-1 random location
     //use random location in the specific range times the light plane
     //return (this->pos + location*(i+1)*this->length+ location*(j+1)*this->width);
-    
+    double radius = 0.125;
+    double random = random_double(0.0,1.0);
+    double random1 = random_double(0.0,1.0);
+    double random2 = random_double(0.0,1.0);
+    double r = radius* random;
+    double theta = 2 * M_PI *random1;
+    double phi = 2 * M_PI * random2;
+    return (this->pos + (i+1)*this->length+ (j+1)*this->width +
+    Vector3D(r*cos(theta)*sin(phi),r*sin(theta)*sin(phi),r*cos(phi)));
+
     //acturally use uniform distribution instead of random distribution
-    return (this->pos+(i+1)*this->length+ (j+1)*this->width);
+    //return (this->pos+(i+1)*this->length+ (j+1)*this->width);
 }
+
+
+

@@ -10,7 +10,7 @@
 #include "scene_object.h"
 #include <math.h>
 #define PI 3.14159265
-
+using namespace std;
 bool UnitSquare::intersect(Ray3D& ray, const Matrix4x4& worldToModel,
                            const Matrix4x4& modelToWorld) {
     // TODO: implement intersection code for UnitSquare, which is
@@ -28,14 +28,17 @@ bool UnitSquare::intersect(Ray3D& ray, const Matrix4x4& worldToModel,
     //transform the ray(origin,direction) to object space
     Point3D origin = worldToModel * ray.origin;
     Vector3D direction = worldToModel * ray.dir;
-    // direction.normalize();
+   // direction.normalize();
     double t = -origin[2]/direction[2];
+    
+    //added by us, to optimize structure
+    __sync_fetch_and_add(&numRaySquareTests, 1);
     
     //invalid intersection
     if(t <= 0.0000000001 || direction[2] == 0||(!ray.intersection.none&&t>ray.intersection.t_value)){
         return false;
     }
-    
+ 
     Point3D p = origin + t*direction;
     Vector3D normal = Vector3D(0,0,1);
     if(normal.dot(direction)>0.0000001)normal = Vector3D(0,0,-1);
@@ -110,120 +113,148 @@ bool UnitCylinder::intersect(Ray3D& ray, const Matrix4x4& worldToModel,const Mat
     //transform the ray(origin,direction) to object space
     Point3D origin = worldToModel * ray.origin;
     Vector3D direction = worldToModel * ray.dir;
-    direction.normalize();
-    double t0,t1;
-    
-    //referenced algorithm,solve for wall intersection
-    double a = direction[0]*direction[0] + direction[1]*direction[1];
-    double b = 2*origin[0]*direction[0]+2*origin[1]*direction[1];
-    double c = origin[0]*origin[0] + origin[1]*origin[1]- 1;
-    double delta = b*b - 4*a*c;
-    //if no solution,return false
+   // direction.normalize();
     double threshold =0.00000001;
-    if(delta < threshold)return false;
-    //find two root
-    double t0 = (-b - sqrt(delta))/(2*a);
-    double t1 = (-b + sqrt(delta))/(2*a);
-    if(t0>t1){
-        double tmp = t0;
-        t0 = t1;
-        t1 = tmp;
-    }
-    //always t0 < t1
-    if(t0 < threshold)return false; //behind camera
-    bool has_inter = false;
+    bool return_true = false; //yes, if equals to true, return true
+    //referenced algorithm,solve for wall intersection
+    
     double z_max = 1;
     double z_min = -1;
-    
+    if(direction[2] == 0){
+        return false;
+    }
     //check if hit close or far cap
+    //calculate dot(light,normal) to decide normal direction
+    //t3, is where the light hit the far cap
+    //t4, is where the light hit the near cap
     double t3 = (z_min - origin[2])/direction[2];
     double t4 = (z_max - origin[2])/direction[2];
-    bool swaped = false;
-    if (t4<t3){
-        double tmp = t3;
-        t3 = t4;
-        t4 = tmp;
-        swaped = true;
-    }//t3 always close cap
-    //by math, t3<t4, so compute close cap first
-    if(t3>threshold ){
+   
+    if (!ray.intersection.none&&t3>ray.intersection.t_value){
+        t3 = -1;
+    }
+    if(t3>threshold){
         double x3 = origin[0] + t3*direction[0];
         double y3 = origin[1] + t3*direction[1];
         if (x3*x3+y3*y3 <= 1) {
             Point3D p(origin + t3*direction);
             Vector3D normal(0,0,-1);
-            if (swaped) normal = -1* normal; //rotation, so normal should be flipped
-            ray.intersection.localPos = p;
+            //check normal direction
+            if(normal.dot(direction) > 0){
+                normal = -normal;
+            }
             ray.intersection.t_value =t3;
             ray.intersection.point = modelToWorld*p;
-            ray.intersection.normal = transNorm(worldToModel, normal);
-            return true;
-        }
-    }
-  /*  if(t4> threshold){
-        double x4 = origin[0] + t4*direction[0];
-        double y4 = origin[1] + t4*direction[1];
-        if (x4*x4+y4*y4 <= 1) {
-            Point3D p(origin + t4*direction);
-            Vector3D normal(0,0,1);
             ray.intersection.localPos = p;
-            ray.intersection.t_value =t4;
-            ray.intersection.point = modelToWorld*p;
             ray.intersection.normal = transNorm(worldToModel, normal);
-            return true;
+            ray.intersection.none = false;
+            return_true = true;
+
         }
-    }*/
-    //now compute wall intersection
-    Point3D  p0(origin + t0*direction);
-    Point3D  p1(origin + t1*direction);
-    //check depth of the intersection
-    if(p0[2]<z_max&& p0[2]>z_min){
-        t0 = t0;
-        has_inter = true;
-    }else if(p1[2]<z_max&& p1[2]>z_min){
-        t0 = t1;
-        has_inter = true;
     }
-    if (has_inter){
-    Point3D p(origin + t0*direction);
-    Vector3D normal(p[0],p[1],0);
-    normal.normalize();
-    ray.intersection.localPos = p;
-    ray.intersection.t_value =t0;
-    ray.intersection.point = modelToWorld*p;
-    ray.intersection.normal = transNorm(worldToModel, normal);
-    return true;//purpose bug
+    // the near cap
+    if (!ray.intersection.none&&t4>ray.intersection.t_value){
+        t4 = -1;
     }
-  /*  if(t3>threshold){
-        double x3 = origin[0] + t3*direction[0];
-        double y3 = origin[1] + t3*direction[1];
-        if (x3*x3+y3*y3 <= 1) {
-            Point3D p(origin + t3*direction);
-            Vector3D normal(0,0,-1);
-            ray.intersection.localPos = p;
-            ray.intersection.t_value =t3;
-            ray.intersection.point = modelToWorld*p;
-            ray.intersection.normal = transNorm(worldToModel, normal);
-            return true;
-        }
-    }*/
-    //then far cap
     if(t4> threshold ){
         double x4 = origin[0] + t4*direction[0];
         double y4 = origin[1] + t4*direction[1];
         if (x4*x4+y4*y4 <= 1) {
             Point3D p(origin + t4*direction);
             Vector3D normal(0,0,1);
-            if (swaped) normal = -1* normal; //rotation, so normal should be flipped
+            //check normal direction
+            if(direction.dot(normal) > 0)
+                normal = -normal;
             ray.intersection.localPos = p;
             ray.intersection.t_value =t4;
             ray.intersection.point = modelToWorld*p;
             ray.intersection.normal = transNorm(worldToModel, normal);
-            return true;
+            ray.intersection.none = false;
+            return_true = true;
         }
     }
     
-    return false;
+    //now calculate the wall intersection
+    double t0,t1;
+    double a = direction[0]*direction[0] + direction[1]*direction[1];
+    double b = 2*origin[0]*direction[0]+2*origin[1]*direction[1];
+    double c = origin[0]*origin[0] + origin[1]*origin[1]- 1;
+    double delta = b*b - 4*a*c;
+    //if no solution,return false
+    //if(delta < threshold)return false;
+    //find two root
+    if(delta < 0){
+        //no need to continue
+        return return_true;
+    }
+    t0 = (-b - sqrt(delta))/(2*a);
+    t1 = (-b + sqrt(delta))/(2*a);
+    Point3D  p0(origin + t0*direction);
+    Point3D  p1(origin + t1*direction);
+    //within the depth of cylinder
+    bool t0_valid = p0[2]<z_max && p0[2]>z_min;
+    bool t1_valid = p1[2]<z_max && p1[2]>z_min;
+    if(t0< threshold && t1<threshold) return return_true;
+    else if(t0 > threshold && t1 > threshold){
+        if(!t0_valid && !t1_valid)return return_true;//no valid
+        //only consider both valid case
+        else if(t0_valid && t1_valid){
+            double t_small = fmin(t0,t1);
+            //if no intersection before
+            if(ray.intersection.none || t_small < ray.intersection.t_value){
+                Point3D p_small(origin + t_small*direction);
+                Vector3D normal(p_small[0], p_small[1], 0);
+                if(direction.dot(normal)>0)normal = -normal;
+                ray.intersection.localPos = p_small;
+                ray.intersection.t_value = t_small;
+                ray.intersection.point = modelToWorld*p_small;
+                ray.intersection.normal = transNorm(worldToModel, normal);
+                 ray.intersection.none = false;
+                return_true = true;
+            }
+        }else{
+            double t_small = t0_valid ? t0 : t1;
+            //if no intersection before
+            if(ray.intersection.none || t_small < ray.intersection.t_value){
+                Point3D p_small(origin + t_small*direction);
+                Vector3D normal(p_small[0], p_small[1], 0);
+                if(direction.dot(normal)>0)normal = -normal;
+                ray.intersection.localPos = p_small;
+                ray.intersection.t_value = t_small;
+                ray.intersection.point = modelToWorld*p_small;
+                ray.intersection.normal = transNorm(worldToModel, normal);
+                 ray.intersection.none = false;
+                return_true = true;
+            }
+        }
+    }
+   else if (t0_valid && t0 > threshold){
+            if(ray.intersection.none || t0 < ray.intersection.t_value){
+                Point3D p_small(origin + t0*direction);
+                Vector3D normal(p_small[0], p_small[1], 0);
+                if(direction.dot(normal)>0)normal = -normal;
+                ray.intersection.localPos = p_small;
+                ray.intersection.t_value = t0;
+                ray.intersection.point = modelToWorld*p_small;
+                ray.intersection.normal = transNorm(worldToModel, normal);
+                 ray.intersection.none = false;
+                return_true = true;
+            }
+    }
+   else if (t1_valid && t1 > threshold){
+            if(ray.intersection.none || t1 < ray.intersection.t_value){
+                Point3D p_small(origin + t1*direction);
+                Vector3D normal(p_small[0], p_small[1], 0);
+                if(direction.dot(normal)>0)normal = -normal;
+                ray.intersection.localPos = p_small;
+                ray.intersection.t_value = t1;
+                ray.intersection.point = modelToWorld*p_small;
+                ray.intersection.normal = transNorm(worldToModel, normal);
+                 ray.intersection.none = false;
+                return_true = true;
+        }
+    }
+    return return_true;
 }
 
 
@@ -271,11 +302,10 @@ bool UnitTriangle::intersect(Ray3D& ray, const Matrix4x4& worldToModel,
     if(normal.dot(direction)>threshold)normal = Vector3D(0,0,-1);
    // std::cout << modelToWorld*p <<normal<<std::endl;
     normal.normalize();
-    double u=atan2(normal[1],normal[0])/(2*PI);
-    double v=p[2]/2.0;
+
     
     ray.intersection.localPos = Point3D(u,v,0);
-    ray.intersection.t_value =t;
+    ray.intersection.t_value =t0;
     ray.intersection.point = modelToWorld*p;
     ray.intersection.normal = transNorm(worldToModel, normal);
     ray.intersection.normal.normalize();

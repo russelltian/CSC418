@@ -27,7 +27,6 @@ using namespace std;
 Scene scene;
 
 
-
 void init(){
     Material *gold=new Material(Color(0.3, 0.3, 0.3), Color(0.75164,0.60648,0.22648),
                                 Color(0.628281, 0.555802, 0.366065),
@@ -35,22 +34,25 @@ void init(){
     Material *ranColor=new Material(Color(0.3, 0.3, 0.3), Color(0.5,0.5,0.5),
                                     Color(0.628281, 0.555802, 0.366065),
                                     51.2,0.0,1.0,NULL);
-    Material *jade=new Material(Color(0, 0, 0), Color(0.54,0.89,0.63),
+    Material *jade = new Material(Color(0, 0, 0), Color(0.54,0.89,0.63),
                                 Color(0.316228,0.316228,0.316228),
                                 12.8,0.0,1.0,NULL);
-    Material *glass=new Material(Color(0.3, 0.3, 0.3), Color(0.75164,0.60648,0.22648),
+    Material *glass = new Material(Color(0.3, 0.3, 0.3), Color(0.75164,0.60648,0.22648),
                                  Color(0.316228,0.316228,0.316228),
                                  12.8,1.1,1.0,NULL);
     
     // russell's edit, redefine mateiral for glossy effect
     Material *gold_glossy=new Material(Color(0.3, 0.3, 0.3), Color(0.75164,0.60648,0.22648),
                                 Color(0.628281, 0.555802, 0.366065),
-                                51.2,0.0,0.51,NULL);
+                                51.2,0.0,0.05,NULL);
     
     Material *jade_glossy=new Material(Color(0, 0, 0), Color(0.54,0.89,0.63),
                                 Color(0.316228,0.316228,0.316228),
-                                12.8,0.0,0.50001,NULL);
-    
+                                12.8,0.0,0.15,NULL);
+    //added by russell,
+    Material *mirror=new Material(Color(0, 0, 0), Color(0,0,0),Color(1,1,1),
+        12.8,0.0,2,NULL);
+
     
     unsigned long int* twidth= new unsigned long int();;
     long int* theight=new long int();
@@ -158,25 +160,30 @@ void init(){
     SceneNode* lens = new SceneNode(new UnitSphere(), glass);
 //    scene.push_back(lens);
     SceneNode* plane = new SceneNode(new UnitSquare(), jade);
-  /// scene.push_back(plane);
+    scene.push_back(plane);
     
     //added a cylinder
     SceneNode* cylinder = new SceneNode(new UnitCylinder(),gold);
-    //scene.push_back(cylinder);
+    scene.push_back(cylinder);
+    
+    
+    
     // Apply some transformations to the sphere and unit square.
     //RTS
-    //add triangle
-    SceneNode* tri = new SceneNode(new UnitTriangle(),gold);
-    //scene.push_back(tri);
-    SceneNode* sphere1 = new SceneNode(new UnitSphere(), jade_glossy);
-    scene.push_back(sphere1);
+
+
+    //all temporary, can delete at any time
+    
     SceneNode* sphere2 = new SceneNode(new UnitSphere(), gold);
     scene.push_back(sphere2);
-    
+    SceneNode* sphere1 = new SceneNode(new UnitSphere(), jade_glossy);
+    scene.push_back(sphere1);
+   SceneNode* mirror_plane = new SceneNode(new UnitSquare(), mirror);
+   // scene.push_back(mirror_plane);
     
     double factor1[3] = { 1.0, 2.0, 1.0 };
     sphere->translate(Vector3D(0, 0, -5));
-    sphere->rotate('x', -45);
+    sphere->rotate('x', 0);
     sphere->rotate('z', 45);
     sphere->scale(Point3D(0, 0, 0), factor1);
     
@@ -191,38 +198,25 @@ void init(){
 
     plane->scale(Point3D(0,0,0), factor2);
     
-    double cyl_factor[3] = {1.0,1.0,1.0};
-    cylinder->translate(Vector3D(0, 0, -5));
-    cylinder->rotate('y',45 );
-    cylinder->rotate('x',45 );
-
+    double cyl_factor[3] = {0.5,0.5,3.0};
+    cylinder->translate(Vector3D(0, 0, -4));
+    cylinder->rotate('y',45);
+    cylinder->rotate('x',60 );
     cylinder->scale(Point3D(0,0,0), cyl_factor);
     
-    double tri_factor[3] = {1.5,2.0,1.0};
-    tri->translate(Vector3D(2, 0, -3));
-    //tri->rotate('x',180 );
-    tri->scale(Point3D(0,0,0), tri_factor);
 
     //temp delete later
     double temp_factor[3] = {0.5,0.5,0.5};
     sphere1->translate(Vector3D(1, 1, -5));
     sphere1->rotate('x', -45);
     sphere1->rotate('z', 45);
-   // sphere1->scale(Point3D(0, 0, 0), temp_factor);
+    //sphere1->scale(Point3D(0, 0, 0), temp_factor);
     sphere2->translate(Vector3D(-1, -1, -5));
     sphere2->rotate('x', -45);
     sphere2->rotate('z', 45);
    // sphere2->scale(Point3D(0, 0, 0), temp_factor);
-  
-    //    double factor3[3] = { 2.0, 1.0, 1.0 };
-    //    sphere2->translate(Vector3D(0, 1.5, -7));
-    //    sphere2->rotate('x', -45);
-    //    sphere2->rotate('z', 45);
-    //    sphere2->scale(Point3D(0, 0, 0), factor3);
-    //
-    //    double grayfactor[3] = { 1.0, 1.0, 1.0 };
-    //    chro->translate(Vector3D(0, 1, -1));
-    //    chro->scale(Point3D(0,0,0), grayfactor);
+    mirror_plane->translate(Vector3D(0, 0, -10));
+    mirror_plane->scale(Point3D(0,0,0), factor2);
 }
 
 void hard_shadow(Raytracer& raytracer,int width,int height){
@@ -231,6 +225,13 @@ void hard_shadow(Raytracer& raytracer,int width,int height){
     LightList light_list;
     PointLight* pLight = new PointLight(Point3D(0,0,5), Color(0.9,0.9,0.9));
     light_list.push_back(pLight);
+    
+    // temp
+    PointLight* pLight1 = new PointLight(Point3D(0,3,-7), Color(0.9,0.9,0.9));
+    //light_list.push_back(pLight1);
+    
+    
+    
     // Render the scene, feel free to make the image smaller for
     // testing purposes.
     Camera camera1(Point3D(0, 0, 1), Vector3D(0, 0, -1), Vector3D(0, 1, 0), 60.0);
@@ -325,12 +326,12 @@ int main(int argc, char* argv[])
     Raytracer raytracer;
     LightList light_list;
     
-    //int width = 320;
-    //int height = 240;
+    int width = 1920;
+    int height = 1080;
     
     //for testing purpose
-    int width = 640;
-    int height = 480;
+//    int width = 640;
+//    int height = 480;
     
     
     if (argc == 3) {
@@ -338,8 +339,10 @@ int main(int argc, char* argv[])
         height = atoi(argv[2]);
     }
     init();
-    soft_shadow(raytracer,width,height);
-    
+    clock_t timeStart = clock();
+    hard_shadow(raytracer,width,height);
+    clock_t timeEnd = clock();
+    printf("render time: %04.2f (sec)\n",(double)(timeEnd - timeStart) / CLOCKS_PER_SEC);//print run time
     return 0;
 }
 

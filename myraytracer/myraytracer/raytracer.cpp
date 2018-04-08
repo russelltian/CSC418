@@ -205,6 +205,8 @@ void Raytracer::render(Camera& camera, Scene& scene, LightList& light_list, Imag
             image.setColorAtPixel(i, j, col);
         }
     }
+    cout << numRaySquareTests <<endl;
+
 }
 
 //added to do depth of field render

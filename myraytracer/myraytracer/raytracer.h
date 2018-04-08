@@ -41,3 +41,6 @@ class Raytracer {
     
 };
 
+
+double random_double(double fMin, double fMax);
+

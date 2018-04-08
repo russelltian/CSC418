@@ -10,6 +10,8 @@
 
 #include "util.h"
 #include <vector>
+static uint64_t numRaySquareTests = 0;
+
 
 // All primitives should provide an intersection function.
 // To create more primitives, inherit from SceneObject.
