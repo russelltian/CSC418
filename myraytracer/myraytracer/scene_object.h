@@ -11,7 +11,7 @@
 #include "util.h"
 #include <vector>
 static uint64_t numRaySquareTests = 0;
-
+using namespace std;
 
 
 class Triangle;
@@ -20,6 +20,77 @@ class Triangle;
 // To create more primitives, inherit from SceneObject.
 // Namely, you can create, Sphere, Cylinder, etc... classes
 // here.
+class Box{
+public:
+    Box(){a=Point3D(0,0,0);b=Point3D(0,0,0);}
+    void expand(const Box &other){
+        Point3D min(999999999,999999999,999999999);
+        Point3D max(-999999999,-999999999,-999999999);
+        Point3D p[4];
+        p[0]=this->a;
+        p[1]=this->b;
+        p[2]=other.a;
+        p[3]=other.b;
+        for(int i=0;i<4;i++){
+            for(int j=0;j<3;j++){
+                min[j]=fmin(p[i][j],min[j]);
+                max[j]=fmax(p[i][j],max[j]);
+            }
+        }
+        a=min;
+        b=max;
+        updateLongestAxis();
+    }
+    void transForm(Matrix4x4 trans){
+        a=trans*a;
+        b=trans*b;
+        updateLongestAxis();
+    }
+    void updateLongestAxis(){
+        double diff[3];
+        
+        diff[0]=b[0]-a[0];
+        diff[1]=b[1]-a[1];
+        diff[2]=b[2]-a[2];
+        double longest=fmax(fmax(diff[0],diff[1]),diff[2]);
+        for(int i=0;i<3;i++){
+            if(a[i]==b[i]){
+                a[i]-=0.00001;
+            }
+            if(longest==diff[i]){
+                longestAxis=i;
+            }
+        }
+        mid=0.5*(a+b);
+    }
+    bool hit(const Ray3D& ray){
+        double tx1 = (a[0] - ray.origin[0])*(1.0/ray.dir[0]);
+        double tx2 = (b[0] - ray.origin[0])*(1.0/ray.dir[0]);
+        
+        double tmin = min(tx1, tx2);
+        double tmax = max(tx1, tx2);
+        
+        double ty1 = (a[1] - ray.origin[1])*(1.0/ray.dir[1]);
+        double ty2 = (b[1] - ray.origin[1])*(1.0/ray.dir[1]);
+        
+        tmin = max(tmin, min(ty1, ty2));
+        tmax = min(tmax, max(ty1, ty2));
+        
+        double tz1 = (a[2] - ray.origin[2])*(1.0/ray.dir[2]);
+        double tz2 = (b[2] - ray.origin[2])*(1.0/ray.dir[2]);
+        
+        tmin = max(tmin, min(tz1, tz2));
+        tmax = min(tmax, max(tz1, tz2));
+        
+        return tmax >= tmin;
+//        return true;
+    }
+    Point3D a;//min
+    Point3D b;//max
+    Point3D mid;
+    int longestAxis;
+};
+
 class SceneObject {
     public:
     // Returns true if an intersection occured, false otherwise.
@@ -67,6 +138,11 @@ struct SceneNode {
     
     bool ismesh;
 	bool firstTouch;
+    Box bbox;
+    Box getBox(){
+        return bbox;
+    };
+    
     
     // Each node maintains a transformation matrix, which maps the
     // geometry from object space to world space and the inverse.
@@ -79,6 +155,22 @@ struct SceneNode {
 
 // Scene is simply implemented as a list of nodes. Doesnt support hierarchy(scene graph).
 typedef std::vector<SceneNode*> Scene;
+
+
+
+class KDNode{
+public:
+    KDNode* left;
+    KDNode* right;
+    vector<SceneNode*> items;
+    KDNode(){};
+//    bool hit(KDNode* node, Ray3D& ray);
+    Box bbox;
+    
+};
+
+KDNode* build(vector<SceneNode*> &itemsin,int depth);
+bool KDHit(KDNode* node,KDNode* root, Ray3D& ray);
 
 // Example primitive you can create, this is a unit square on
 // the xy-plane.

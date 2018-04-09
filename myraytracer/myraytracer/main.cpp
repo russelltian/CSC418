@@ -124,31 +124,10 @@ void init(){
                         51.2,0.0,1.0,rainbow);
     
     
-//    //russell's addition
-//    unsigned char* universe[3];
-//    for(unsigned i=0;i<3;i++){
-//        universe[i]=new unsigned char();
-//    }
-//    read=bmp_read ( "universe.bmp", twidth, theight,&universe[0], &universe[1], &universe[2]);
-//    if(read){
-//        std::cout<<"error loading texture"<<std::endl;
-//    }
-//
-//    Material *universeMat = new Material(Color(0, 0, 0), Color(0, 0, 0),
-//                       Color(0, 0, 0),
-//                       51.2,0.0,1.0,universe);
-    
-//test the triangle shape
-    
-//    SceneNode* myT = new SceneNode(new Triangle(Point3D(0,0,-3),Point3D(2,0,-5),Point3D(0,4,-5)),jade);
-//    scene.push_back(myT);
-    
-    
-    
     
     
     //load obj file here
-    std::string inputfile = "cube.obj";
+    std::string inputfile = "bunny.obj";
     tinyobj::attrib_t attrib;
     std::vector<tinyobj::shape_t> shapes;
     std::vector<tinyobj::material_t> materials;
@@ -185,29 +164,12 @@ void init(){
                 }
                 SceneNode* thisT = new SceneNode(new Triangle(thisTri[0],thisTri[1],thisTri[2]),jade);
                 //order:TRS
-                thisT->translate(Vector3D(0,-3,-5));
+//                thisT->translate(Vector3D(0,-3,-5));
 //                thisT->rotate('y',45);
-                //thisT->rotate('x',90);
-                double Tfactor[3] = { 1, 1, 1 };
+                thisT->rotate('x',90);
+                double Tfactor[3] = { 20, 20, 20 };
                 thisT->scale(Point3D (0,0,0), Tfactor);
                 scene.push_back(thisT);
-                
-                
-                
-                // access to vertex
-//                tinyobj::index_t idx = shapes[s].mesh.indices[index_offset + v];
-//                tinyobj::real_t vx = attrib.vertices[3*idx.vertex_index+0];
-//                tinyobj::real_t vy = attrib.vertices[3*idx.vertex_index+1];
-//                tinyobj::real_t vz = attrib.vertices[3*idx.vertex_index+2];
-                //                tinyobj::real_t nx = attrib.normals[3*idx.normal_index+0];
-                //                tinyobj::real_t ny = attrib.normals[3*idx.normal_index+1];
-                //                tinyobj::real_t nz = attrib.normals[3*idx.normal_index+2];
-                //                tinyobj::real_t tx = attrib.texcoords[2*idx.texcoord_index+0];
-                //                tinyobj::real_t ty = attrib.texcoords[2*idx.texcoord_index+1];
-                // Optional: vertex colors
-                // tinyobj::real_t red = attrib.colors[3*idx.vertex_index+0];
-                // tinyobj::real_t green = attrib.colors[3*idx.vertex_index+1];
-                // tinyobj::real_t blue = attrib.colors[3*idx.vertex_index+2];
             }
             index_offset += fv;
             
@@ -224,11 +186,11 @@ void init(){
     SceneNode* lens = new SceneNode(new UnitSphere(), glass);
    // scene.push_back(lens);
     SceneNode* plane = new SceneNode(new UnitSquare(), jade);
-    scene.push_back(plane);
+//    scene.push_back(plane);
     
     //added a cylinder
     SceneNode* cylinder = new SceneNode(new UnitCylinder(),gold);
-    scene.push_back(cylinder);
+//    scene.push_back(cylinder);
     
     
     
@@ -265,6 +227,11 @@ void init(){
     cylinder->rotate('x',60 );
     cylinder->scale(Point3D(0,0,0), cyl_factor);
     
+    
+    
+    
+    
+    
 }
 
 void hard_shadow(Raytracer& raytracer,int width,int height){
@@ -272,7 +239,7 @@ void hard_shadow(Raytracer& raytracer,int width,int height){
     // Defines a point light source.
     LightList light_list;
 //  PointLight* pLight = new PointLight(Point3D(0,0,5), Color(0.9,0.9,0.9));
-    PointLight* pLight = new PointLight(Point3D(-5,-5,10), Color(0.9,0.9,0.9));
+    PointLight* pLight = new PointLight(Point3D(-3,-4,5), Color(0.9,0.9,0.9));
     light_list.push_back(pLight);
     
     // temp
@@ -291,7 +258,7 @@ void hard_shadow(Raytracer& raytracer,int width,int height){
     //std::cout << "finished View1" << std::endl;
     // Render it from a different point of view.
 //    Camera camera2(Point3D(4, 2, 1), Vector3D(-4, -2, -6), Vector3D(0, 1, 0), 60.0);
-    Camera camera2(Point3D(0, -10, 3), Vector3D(0, 10, -3), Vector3D(0, 1, 0), 60.0);
+    Camera camera2(Point3D(0, -3, 5), Vector3D(0, 3, -5), Vector3D(0, 1, 0), 60.0);
     Image image2(width, height);
     raytracer.render(camera2, scene, light_list, image2);
     image2.flushPixelBuffer("view2.bmp");
@@ -377,8 +344,8 @@ int main(int argc, char* argv[])
     Raytracer raytracer;
     LightList light_list;
     
-    int width = 1920;
-    int height = 1080;
+    int width = 640;
+    int height = 480;
     
     //for testing purpose
 //    int width = 640;
@@ -390,8 +357,9 @@ int main(int argc, char* argv[])
         height = atoi(argv[2]);
     }
     init();
+    std::cout<<"finished initialization"<<std::endl;
     clock_t timeStart = clock();
-    soft_shadow(raytracer,width,height);
+    hard_shadow(raytracer,width,height);
     clock_t timeEnd = clock();
     printf("render time: %04.2f (sec)\n",(double)(timeEnd - timeStart) / CLOCKS_PER_SEC);//print run time
     return 0;
