@@ -471,7 +471,7 @@ void Shade_Env(Ray3D& ray,Material*Mat){
                 break;
     }
     //tIndex= (pos_y*width+pos_x);
-    tIndex= (pos_y)*width + pos_x ;
+    tIndex= (pos_y)*width + pos_x;
   //  tIndex = 12186642  -100;
     //tIndex = 12186642+3;
     if(texture[0] /*&& (index == 2 || index == 4 || index == 3 )*/){

@@ -98,7 +98,7 @@ class UnitCylinder : public SceneObject {
     public:
     bool intersect(Ray3D& ray, const Matrix4x4& worldToModel,
     const Matrix4x4& modelToWorld);
-
+    
 };
 
 
@@ -116,4 +116,10 @@ class Triangle: public SceneObject{
     Point3D o;
     Vector3D u;
     Vector3D v;
+};
+
+class UnitCube: public SceneObject{
+public:
+    bool intersect(Ray3D& ray, const Matrix4x4& worldToModel,
+                   const Matrix4x4& modelToWorld);
 };

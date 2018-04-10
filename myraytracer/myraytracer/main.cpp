@@ -258,8 +258,8 @@ Material* init_env(){
     
     unsigned long int* twidth= new unsigned long int();;
     long int* theight=new long int();
-    //    unsigned char*** texture=new unsigned char**[3];
     
+    //canyon scene
     unsigned char* canyon[3];
     for(unsigned i=0;i<3;i++){
         canyon[i]=new unsigned char();
@@ -272,7 +272,7 @@ Material* init_env(){
                        Color(0, 0, 0),
                        51.2,0.0,1.0,canyon,*twidth,*theight);
     
-    
+    //skysea scene
     unsigned char* skysea[3];
     for(unsigned i=0;i<3;i++){
         skysea[i]=new unsigned char();
@@ -285,16 +285,31 @@ Material* init_env(){
                                        Color(0, 0, 0),
                                        51.2,0.0,1.0,skysea,*twidth,*theight);
     
+    //wood mateiral
+    unsigned char* wood[3];
+    for(unsigned i=0;i<3;i++){
+        wood[i]=new unsigned char();
+    }
+    read=bmp_read ( "wood.bmp", twidth, theight,&wood[0], &wood[1], &wood[2]);
+    if(read){
+        std::cout<<"error loading texture"<<std::endl;
+    }
     
+    Material *woodMat = new Material(Color(0, 0, 0), Color(0.75164,0.60648,0.22648),
+                                     Color(0.628281, 0.555802, 0.366065),
+                                     51.2,0.0,1.0,wood,*twidth,*theight);
     //standard objects in the scene by default
-    //all temporary, can delete at any time
     double factor1[3] = { 6.0, 6.0, 1.0 };
-    double factor2[3] = { 2.0, 2.0, 2.0 };
-    SceneNode* sphere2 = new SceneNode(new UnitSphere(), gold);
+    double factor2[3] = { 2.0, 2.0, 1.0 };
+    //SceneNode* sphere2 = new SceneNode(new UnitSphere(), gold);
     //scene.push_back(sphere2);
-    sphere2->translate(Vector3D(-2, 0, -4));
-    sphere2->scale(Point3D(0,0,0),factor2);
-    SceneNode* plane = new SceneNode(new UnitSquare(), canyonMat);
+//   sphere2->translate(Vector3D(-2, 0, -4));
+//   sphere2->scale(Point3D(0,0,0),factor2);
+    SceneNode* box = new SceneNode(new UnitCube(), gold);
+    scene.push_back(box);
+    box->translate(Vector3D(0, 0, -5));
+    box->scale(Point3D(0,0,0),factor2);
+    SceneNode* plane = new SceneNode(new UnitSquare(), woodMat);
     //scene.push_back(plane);
     plane->translate(Vector3D(0, 0, -7));
     plane->scale(Point3D(0,0,0),factor1);
@@ -315,26 +330,24 @@ void hard_shadow(Raytracer& raytracer,int width,int height){
     light_list.push_back(pLight);
     
     // temp
-    PointLight* pLight1 = new PointLight(Point3D(0,3,-7), Color(0.9,0.9,0.9));
+   // PointLight* pLight1 = new PointLight(Point3D(0,3,-7), Color(0.9,0.9,0.9));
     //light_list.push_back(pLight1);
     
     
     
     // Render the scene, feel free to make the image smaller for
     // testing purposes.
-//    Camera camera1(Point3D(0, 0, 1), Vector3D(0, 0, -1), Vector3D(0, 1, 0), 60.0);
- //   Camera camera1(Point3D(0, 0, 5), Vector3D(0, 0, -1), Vector3D(0, 1, 0), 60.0);
- //   Image image1(width, height);
- //   raytracer.render(camera1, scene, light_list, image1); //render 3D scene to image
- //   image1.flushPixelBuffer("view1.bmp"); //save rendered image to file
-    //std::cout << "finished View1" << std::endl;
+    Camera camera1(Point3D(0, 0, 1), Vector3D(0, 0, -1), Vector3D(0, 1, 0), 60.0);
+   // Camera camera1(Point3D(0, 0, 5), Vector3D(0, 0, -1), Vector3D(0, 1, 0), 60.0);
+    Image image1(width, height);
+    raytracer.render(camera1, scene, light_list, image1); //render 3D scene to image
+    image1.flushPixelBuffer("view1.bmp"); //save rendered image to file
     // Render it from a different point of view.
-    Camera camera2(Point3D(0, -3, 5), Vector3D(0, 3, -5), Vector3D(0, 1, 0), 60.0);
-  //  Camera camera2(Point3D(0, -10, 3), Vector3D(0, 10, -3), Vector3D(0, 1, 0), 60.0);
+    Camera camera2(Point3D(0, -3, 5), Vector3D(0, 0, -5), Vector3D(0, 1, 0), 60.0);
+    //  Camera camera2(Point3D(0, -10, 3), Vector3D(0, 10, -3), Vector3D(0, 1, 0), 60.0);
     Image image2(width, height);
     raytracer.render(camera2, scene, light_list, image2);
     image2.flushPixelBuffer("view2.bmp");
-    std::cout << "finished View2" << std::endl;
     // Free memory
     for (size_t i = 0; i < scene.size(); ++i) {
         delete scene[i];
@@ -495,8 +508,8 @@ int main(int argc, char* argv[])
    // init();
     Material *parse = init_env();
     clock_t timeStart = clock();
-    env_mapping(raytracer,width,height,parse);
-    //hard_shadow(raytracer,width,height);
+   // env_mapping(raytracer,width,height,parse);
+    hard_shadow(raytracer,width,height);
     clock_t timeEnd = clock();
     printf("render time: %04.2f (sec)\n",(double)(timeEnd - timeStart) / CLOCKS_PER_SEC);//print run time
     return 0;
