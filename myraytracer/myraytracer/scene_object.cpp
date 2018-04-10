@@ -168,7 +168,7 @@ bool UnitCylinder::intersect(Ray3D& ray, const Matrix4x4& worldToModel,const Mat
             ray.intersection.t_value =t4;
             ray.intersection.point = modelToWorld*p;
             ray.intersection.normal = transNorm(worldToModel, normal);
-//            ray.intersection.none = false;
+            ray.intersection.none = false;
             return_true = true;
         }
     }
@@ -767,7 +767,7 @@ bool UnitTriangle::intersect(Ray3D& ray, const Matrix4x4& worldToModel,
     //transform to object space
     Point3D origin = worldToModel * ray.origin;
     Vector3D direction = worldToModel * ray.dir;
-    direction.normalize();
+   // direction.normalize();
     double threshold = 0.00000001;
     //points
     Vector3D p1(-0.75983,-0.658035,0);//left
