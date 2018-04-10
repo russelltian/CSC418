@@ -153,7 +153,16 @@ Color Raytracer::shadeRay(Ray3D& ray, Scene& scene, LightList& light_list,int bo
     return col;
 }
 
+void createBoxes(Scene& scene){
+    for(int i=0;i<scene.size();i++){
+        scene[i]->bbox.transForm(scene[i]->trans);
+    }
+}
+
 void Raytracer::render(Camera& camera, Scene& scene, LightList& light_list, Image& image) {
+    
+    createBoxes(scene);
+    
     ROOT=build(scene, 0);
     
     computeTransforms(scene);
@@ -223,6 +232,8 @@ void Raytracer::render(Camera& camera, Scene& scene, LightList& light_list, Imag
 //added to do depth of field render
 //we give the camera a thin lens instead of a pin hole
 void Raytracer::render_dof(Camera& camera, Scene& scene, LightList& light_list, Image& image, double focus_index) {
+    createBoxes(scene);
+    
     computeTransforms(scene);
     
     Matrix4x4 viewToWorld;

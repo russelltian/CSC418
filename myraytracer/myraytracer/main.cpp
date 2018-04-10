@@ -28,6 +28,24 @@ using namespace std;
 Scene scene;
 
 
+Material* createMat(char const * s){
+    unsigned long int* twidth= new unsigned long int();;
+    long int* theight=new long int();
+    unsigned char** rgb=new unsigned char*[3];
+    for(unsigned i=0;i<3;i++){
+        rgb[i]=new unsigned char();
+    }
+    bool read=bmp_read ( s, twidth, theight,&rgb[0], &rgb[1], &rgb[2]);
+    if(read){
+        std::cout<<"error loading texture"<<std::endl;
+    }
+    
+    return new Material(Color(0, 0, 0), Color(0, 0, 0),
+                                        Color(0, 0, 0),
+                                        51.2,0.0,1.0,rgb);
+}
+
+
 void init(){
     Material *gold=new Material(Color(0.3, 0.3, 0.3), Color(0.75164,0.60648,0.22648),
                                 Color(0.628281, 0.555802, 0.366065),
@@ -51,83 +69,19 @@ void init(){
                                 Color(0.316228,0.316228,0.316228),
                                 12.8,0.0,0.15,NULL);
     
+    Material* waveMat=createMat("wave03.bmp");
+
+    Material* gridMat =createMat("grid.bmp");
     
+    Material *woodMat =createMat("wood.bmp");
     
-    unsigned long int* twidth= new unsigned long int();;
-    long int* theight=new long int();
-    //    unsigned char*** texture=new unsigned char**[3];
-    unsigned char* wave[3];
-    for(unsigned i=0;i<3;i++){
-        wave[i]=new unsigned char();
-    }
-    bool read=bmp_read ( "wave03.bmp", twidth, theight,&wave[0], &wave[1], &wave[2]);
-    if(read){
-        std::cout<<"error loading texture"<<std::endl;
-    }
+    Material *auroraMat=createMat("aurora_texture.bmp");
     
-    Material* waveMat=new Material(Color(0, 0, 0), Color(0.75164,0.60648,0.22648),
-                     Color(0.628281, 0.555802, 0.366065),
-                     51.2,0.0,1.0,wave);
-    
-    
-    unsigned char* grid[3];
-    for(unsigned i=0;i<3;i++){
-        grid[i]=new unsigned char();
-    }
-    read=bmp_read ( "grid.bmp", twidth, theight,&grid[0], &grid[1], &grid[2]);
-    if(read){
-        std::cout<<"error loading texture"<<std::endl;
-    }
-    
-    Material* gridMat = new Material(Color(0, 0, 0), Color(0.75164,0.60648,0.22648),
-                     Color(0.628281, 0.555802, 0.366065),
-                     51.2,0.0,1.0,grid);
-    
-    unsigned char* wood[3];
-    for(unsigned i=0;i<3;i++){
-        wood[i]=new unsigned char();
-    }
-    read=bmp_read ( "wood.bmp", twidth, theight,&wood[0], &wood[1], &wood[2]);
-    if(read){
-        std::cout<<"error loading texture"<<std::endl;
-    }
-    
-    Material *woodMat = new Material(Color(0, 0, 0), Color(0.75164,0.60648,0.22648),
-                     Color(0.628281, 0.555802, 0.366065),
-                     51.2,0.0,1.0,wood);
-    
-    
-    unsigned char* aurora[3];
-    for(unsigned i=0;i<3;i++){
-        aurora[i]=new unsigned char();
-    }
-    read=bmp_read ( "aurora_texture.bmp", twidth, theight,&aurora[0], &aurora[1], &aurora[2]);
-    if(read){
-        std::cout<<"error loading texture"<<std::endl;
-    }
-    
-    Material auroraMat(Color(0, 0, 0), Color(0, 0, 0),
-                       Color(0, 0, 0),
-                       51.2,0.0,1.0,aurora);
-    
-    unsigned char* rainbow[3];
-    for(unsigned i=0;i<3;i++){
-        rainbow[i]=new unsigned char();
-    }
-    read=bmp_read ( "rainbow.bmp", twidth, theight,&rainbow[0], &rainbow[1], &rainbow[2]);
-    if(read){
-        std::cout<<"error loading texture"<<std::endl;
-    }
-    
-    Material *rainbowMat = new Material(Color(0, 0, 0), Color(0, 0, 0),
-                        Color(0, 0, 0),
-                        51.2,0.0,1.0,rainbow);
-    
-    
+    Material *rainbowMat=createMat("rainbow.bmp");
     
     
     //load obj file here
-    std::string inputfile = "bunny.obj";
+    std::string inputfile = "David2.obj";
     tinyobj::attrib_t attrib;
     std::vector<tinyobj::shape_t> shapes;
     std::vector<tinyobj::material_t> materials;
@@ -166,8 +120,8 @@ void init(){
                 //order:TRS
 //                thisT->translate(Vector3D(0,-3,-5));
 //                thisT->rotate('y',45);
-                thisT->rotate('x',90);
-                double Tfactor[3] = { 20, 20, 20 };
+                thisT->rotate('x',-90);
+                double Tfactor[3] = { 0.05, 0.05, 0.05 };
                 thisT->scale(Point3D (0,0,0), Tfactor);
                 scene.push_back(thisT);
             }
@@ -182,14 +136,14 @@ void init(){
     //standard objects in the scene by default
     
     SceneNode* sphere = new SceneNode(new UnitSphere(), gold);
-   // scene.push_back(sphere);
+//    scene.push_back(sphere);
     SceneNode* lens = new SceneNode(new UnitSphere(), glass);
-   // scene.push_back(lens);
-    SceneNode* plane = new SceneNode(new UnitSquare(), jade);
+//    scene.push_back(lens);
+    SceneNode* plane = new SceneNode(new UnitSquare(), rainbowMat);
 //    scene.push_back(plane);
     
     //added a cylinder
-    SceneNode* cylinder = new SceneNode(new UnitCylinder(),gold);
+    SceneNode* cylinder = new SceneNode(new UnitCylinder(),glass);
 //    scene.push_back(cylinder);
     
     
@@ -214,7 +168,7 @@ void init(){
     lens->translate(Vector3D(0, 0, -4));
     lens->scale(Point3D(0,0,0), lensfactor);
     double factor2[3] = { 6.0, 6.0, 1.0 };
-    plane->translate(Vector3D(0, 0, -5));
+    plane->translate(Vector3D(0, 0, -7));
     //plane->rotate('z', 45);
    // plane->translate(Vector3D(0, 0, -7));
     //plane->rotate('x',180 );
@@ -344,8 +298,8 @@ int main(int argc, char* argv[])
     Raytracer raytracer;
     LightList light_list;
     
-    int width = 640;
-    int height = 480;
+    int width = 1920;
+    int height = 1080;
     
     //for testing purpose
 //    int width = 640;

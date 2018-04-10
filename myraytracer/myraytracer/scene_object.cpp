@@ -168,7 +168,7 @@ bool UnitCylinder::intersect(Ray3D& ray, const Matrix4x4& worldToModel,const Mat
             ray.intersection.t_value =t4;
             ray.intersection.point = modelToWorld*p;
             ray.intersection.normal = transNorm(worldToModel, normal);
-            ray.intersection.none = false;
+//            ray.intersection.none = false;
             return_true = true;
         }
     }
@@ -398,7 +398,7 @@ void SceneNode::rotate(char axis, double angle) {
         }
         if (i == 0) {
             this->trans = this->trans*rotation;
-            this->bbox.transForm(rotation);
+//            this->bbox.transForm(rotation);
             angle = -angle;
         }
         else {
@@ -413,7 +413,7 @@ void SceneNode::translate(Vector3D trans) {
     translation[0][3] = trans[0];
     translation[1][3] = trans[1];
     translation[2][3] = trans[2];
-    this->bbox.transForm(translation);
+//    this->bbox.transForm(translation);
     this->trans = this->trans*translation;
     translation[0][3] = -trans[0];
     translation[1][3] = -trans[1];
@@ -432,7 +432,7 @@ void SceneNode::scale(Point3D origin, double factor[3] ) {
     scale[2][2] = factor[2];
     scale[2][3] = origin[2] - factor[2] * origin[2];
     this->trans = this->trans*scale;
-    this->bbox.transForm(scale);
+//    this->bbox.transForm(scale);
     scale[0][0] = 1/factor[0];
     scale[0][3] = origin[0] - 1/factor[0] * origin[0];
     scale[1][1] = 1/factor[1];
@@ -773,6 +773,7 @@ bool KDHit(KDNode* node,KDNode* root, Ray3D& ray){
                         Ray3D newRay(origin,newDir);
                         KDHit(root,root, newRay);
                         ray=newRay;
+                        hit=!ray.intersection.none;
                     }else{
                         ray.intersection.mat = thisItem->mat;
                         ray.intersection.none = false;
@@ -785,4 +786,32 @@ bool KDHit(KDNode* node,KDNode* root, Ray3D& ray){
         return hit;
     }
     return false;
+}
+
+SceneNode::SceneNode(UnitSphere* inobj, Material* mat){
+    this->obj=inobj;
+    this->mat=mat;
+    this->ismesh=false;
+    
+    this->bbox.a=Point3D(-1,-1,-1);
+    this->bbox.b=Point3D(1,1,1);;
+    this->bbox.updateLongestAxis();
+}
+
+SceneNode::SceneNode(UnitSquare* inobj, Material* mat){
+    this->obj=inobj;
+    this->mat=mat;
+    this->ismesh=false;
+    this->bbox.a=Point3D(-0.5,-0.5,-0.5);
+    this->bbox.b=Point3D(0.5,0.5,0.5);;
+    this->bbox.updateLongestAxis();
+}
+
+SceneNode::SceneNode(UnitCylinder* inobj, Material* mat){
+    this->obj=inobj;
+    this->mat=mat;
+    this->ismesh=false;
+    this->bbox.a=Point3D(-1.5,-1.5,-1.5);
+    this->bbox.b=Point3D(1.5,1.5,1.5);;
+    this->bbox.updateLongestAxis();
 }

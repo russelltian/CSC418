@@ -15,6 +15,9 @@ using namespace std;
 
 
 class Triangle;
+class UnitCylinder;
+class UnitSquare;
+class UnitSphere;
 
 // All primitives should provide an intersection function.
 // To create more primitives, inherit from SceneObject.
@@ -42,8 +45,26 @@ public:
         updateLongestAxis();
     }
     void transForm(Matrix4x4 trans){
-        a=trans*a;
-        b=trans*b;
+        Point3D p[8];
+        p[0]=trans*a;
+        p[1]=trans*Point3D(a[0],a[1],b[2]);
+        p[2]=trans*Point3D(a[0],b[1],a[2]);
+        p[3]=trans*Point3D(a[0],b[1],b[2]);
+        p[4]=trans*Point3D(b[0],a[1],a[2]);
+        p[5]=trans*Point3D(b[0],a[1],b[2]);
+        p[6]=trans*Point3D(b[0],b[1],a[2]);
+        p[7]=trans*Point3D(b[0],b[1],b[2]);
+        Point3D min(999999999,999999999,999999999);
+        Point3D max(-999999999,-999999999,-999999999);
+        for(int i=0;i<8;i++){
+            for(int j=0;j<3;j++){
+                min[j]=fmin(p[i][j],min[j]);
+                max[j]=fmax(p[i][j],max[j]);
+            }
+        }
+        
+        a=min;
+        b=max;
         updateLongestAxis();
     }
     void updateLongestAxis(){
@@ -54,9 +75,6 @@ public:
         diff[2]=b[2]-a[2];
         double longest=fmax(fmax(diff[0],diff[1]),diff[2]);
         for(int i=0;i<3;i++){
-            if(a[i]==b[i]){
-                a[i]-=0.00001;
-            }
             if(longest==diff[i]){
                 longestAxis=i;
             }
@@ -115,6 +133,12 @@ struct SceneNode {
     obj(obj), mat(mat),ismesh(false) {}
     
     SceneNode(Triangle* obj, Material* mat);
+    
+    SceneNode(UnitSphere* inobj, Material* mat);
+    
+    SceneNode(UnitSquare* inobj, Material* mat);
+    
+    SceneNode(UnitCylinder* inobj, Material* mat);
 
     
     ~SceneNode() {
