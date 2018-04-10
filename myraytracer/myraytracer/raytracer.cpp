@@ -294,3 +294,208 @@ void Raytracer::render_dof(Camera& camera, Scene& scene, LightList& light_list, 
         }
     }
 }
+
+//the following are defined for environment mapping, since right now we don't
+//want to risk ruining the previous effort, so we write them seperatelly by far
+void Raytracer::render_env(Camera& camera, Scene& scene, LightList& light_list, Image& image,Material*Mat) {
+    
+    computeTransforms(scene);
+    Matrix4x4 viewToWorld;
+    double factor = (double(image.height)/2)/tan(camera.fov*M_PI/360.0);
+    viewToWorld = camera.initInvViewMatrix();
+    //added by us to do anti-aliasing
+    int num_per_pixel_row = 2; // pow(0.5) to the num of random ray per pixel
+    // Construct a ray for each pixel.
+    for (int i = 0; i < image.height; i++) {
+        for (int j = 0; j < image.width; j++) {
+
+            Color col(0.0,0.0,0.0);
+            
+            for(int k = 0; k < num_per_pixel_row; k++){
+                for(int m = 0; m < num_per_pixel_row; m++){
+                    Point3D origin(0, 0, 0);
+                    Point3D imagePlane;
+                    //get the random position between 0 and 1
+                    double location = rand()/(RAND_MAX + 1.);
+                    //devide them to different blocks on the pixel
+                    double location_x = location/num_per_pixel_row*(k+1);
+                    double location_y = location/num_per_pixel_row*(m+1);
+                    imagePlane[0] = (-double(image.width)/2 + location_x + j)/factor;
+                    imagePlane[1] = (-double(image.height)/2 + location_y + i)/factor;
+                    imagePlane[2] = -1;
+                    
+                    
+                    Ray3D ray;
+                    //Convert ray to world space
+                    //Ray Direction
+                    Vector3D dir = imagePlane - origin;
+                    //Convert direction and origin to world-space
+                    dir = viewToWorld * dir;
+                    dir.normalize();
+                    origin = viewToWorld * origin;
+                    //construct the ray
+                    ray = Ray3D(origin,dir);
+                    col = col + shadeRay_Env(ray, scene, light_list,Mat); //sum up color
+                }
+            }
+            double num_per_pixel = pow(num_per_pixel_row,2.0);//samples on the pixel
+            Color scale(1.0/num_per_pixel,1.0/num_per_pixel,1.0/num_per_pixel);
+            col = scale*col;  //scale the color to find avg color per pixel
+            
+            image.setColorAtPixel(i, j, col);
+        }
+    }
+}
+
+//environment mapping shaderay
+Color Raytracer::shadeRay_Env(Ray3D& ray, Scene& scene, LightList& light_list,Material*Mat) {
+    Color col(0.0, 0.0, 0.0);
+    traverseScene(scene, ray);
+
+    //if intersection, compute the color at that intersection
+    if(ray.intersection.none ){
+        Shade_Env(ray,Mat);//(ray,light_list,scene);
+        col = ray.col;
+    }
+    //if need more reflect and have intersection,
+    //define the reflect ray, and recursive call
+    if(!ray.intersection.none){
+        //define reflect ray
+        Point3D intersect_p = ray.intersection.point; // intersection point
+        Vector3D intersect_n(ray.intersection.normal);
+        intersect_n.normalize(); //normalize
+        Vector3D intersect_r = -1*(2*(intersect_n.dot(ray.dir))*intersect_n-ray.dir);
+        intersect_r.normalize();
+        
+        Ray3D second_r;
+        second_r = Ray3D(intersect_p,intersect_r); //intersection point is its origin
+
+        //recursive call, count is used for decide scale factor to the light
+        col = col + shadeRay_Env(second_r, scene, light_list,Mat);
+        col.clamp();
+    }
+    return col;
+}
+
+//confirm the background pixel
+void Shade_Env(Ray3D& ray,Material*Mat){
+    double x = ray.dir[0];
+    double y = ray.dir[1];
+    double z = ray.dir[2];
+    double absX = fabs(x);
+    double absY = fabs(y);
+    double absZ = fabs(z);
+    int is_x_pos = x > 0 ? 1 : 0;
+    int is_y_pos = y > 0 ? 1 : 0;
+    int is_z_pos = z > 0 ? 1 : 0;
+    double u,v;
+    int index = 0;
+    double uc = 0.0; double vc = 0.0;
+    double maxAxis = 0.0;
+    // positive x
+    if(is_x_pos && absX >= absY && absX >= absZ){
+    // u (0 to 1) goes from +z to -z
+    // v (0 to 1) goes from -y to +y
+        maxAxis = absX;
+        uc = -z;
+        vc = y;
+        index = 0;
+    }
+    // NEGATIVE X
+    if (!is_x_pos && absX >= absY && absX >= absZ) {
+        // u (0 to 1) goes from -z to +z
+        // v (0 to 1) goes from -y to +y
+        maxAxis = absX;
+        uc = z;
+        vc = y;
+        index = 1;
+    }
+    // POSITIVE Y
+    if (is_y_pos && absY >= absX && absY >= absZ) {
+        // u (0 to 1) goes from -x to +x
+        // v (0 to 1) goes from +z to -z
+        maxAxis = absY;
+        uc = x;
+        vc = -z;
+        index = 2;
+    }
+    // NEGATIVE Y
+    if (!is_y_pos && absY >= absX && absY >= absZ) {
+        // u (0 to 1) goes from -x to +x
+        // v (0 to 1) goes from -z to +z
+        maxAxis = absY;
+        uc = x;
+        vc = z;
+        index = 3;
+    }
+    // POSITIVE Z
+    if (is_z_pos && absZ >= absX && absZ >= absY) {
+        // u (0 to 1) goes from -x to +x
+        // v (0 to 1) goes from -y to +y
+        maxAxis = absZ;
+        uc = x;
+        vc = y;
+        index = 4;
+    }
+    // NEGATIVE Z
+    if (!is_z_pos && absZ >= absX && absZ >= absY) {
+        // u (0 to 1) goes from +x to -x
+        // v (0 to 1) goes from -y to +y
+        maxAxis = absZ;
+        uc = -x;
+        vc = y;
+        index = 5;
+    }
+
+    //convert range from -1 to 1 to 0 to 1
+    u = 0.5f * (uc / maxAxis + 1.0f);
+    v = 0.5f * (vc / maxAxis + 1.0f);
+//    if(u != 0 && v != 0 && index == 0)
+//    printf("%d,%f, %f \n",index,u,v);
+    unsigned char** texture=Mat->texture;
+//    texture[0] = Mat->texture[0];
+//    texture[1] = Mat->texture[1];
+//    texture[2] = Mat->texture[2];
+    int height=int(Mat->theight);
+    int width=int(Mat->twidth);
+    int tx = width/4;
+    int ty = height/3;
+    int tIndex;
+    int pos_x = 0;
+    int pos_y = 0;
+    switch (index)
+    {
+        case 0: pos_x = (2*tx + u*tx);
+                pos_y = (ty + v*ty);
+                break;
+        case 1: pos_x = (u*tx);
+                pos_y = (ty + v*ty);
+            
+                break;
+        case 2: pos_x = (tx + u*tx) ;
+                pos_y = (2*ty + v * ty);
+           
+                break;
+        case 3: pos_x = (tx + u*tx );
+                pos_y = (v * ty);
+                break;
+        case 4: pos_x =( tx + u*tx) ;
+                pos_y = (ty + v * ty);
+                break;
+        case 5: pos_x = (3*tx + u*tx);
+                pos_y = (ty + v * ty);
+                break;
+    }
+    //tIndex= (pos_y*width+pos_x);
+    tIndex= (pos_y)*width + pos_x ;
+  //  tIndex = 12186642  -100;
+    //tIndex = 12186642+3;
+    if(texture[0] /*&& (index == 2 || index == 4 || index == 3 )*/){
+        Color texColor(texture[0][tIndex]/255.0,texture[1][tIndex]/255.0,texture[2][tIndex]/255.0);
+        ray.col = texColor;
+//        if (texColor[0] == 1.0){
+//            cout << pos_x << " "<<pos_y<<endl;
+//            ray.col[0] = 0;
+//        }
+    }
+}

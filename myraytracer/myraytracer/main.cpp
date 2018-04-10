@@ -49,25 +49,25 @@ Material* createMat(char const * s){
 void init(){
     Material *gold=new Material(Color(0.3, 0.3, 0.3), Color(0.75164,0.60648,0.22648),
                                 Color(0.628281, 0.555802, 0.366065),
-                                51.2,0.0,1.0,NULL);
+                                51.2,0.0,1.0,NULL,NULL,NULL);
     Material *ranColor=new Material(Color(0.3, 0.3, 0.3), Color(0.9,0.9,0.9),
                                     Color(0.628281, 0.555802, 0.366065),
-                                    51.2,0.0,1.0,NULL);
+                                    51.2,0.0,1.0,NULL,NULL,NULL);
     Material *jade = new Material(Color(0, 0, 0), Color(0.54,0.89,0.63),
                                 Color(0.316228,0.316228,0.316228),
-                                12.8,0.0,1.0,NULL);
+                                12.8,0.0,1.0,NULL,NULL,NULL);
     Material *glass = new Material(Color(0.3, 0.3, 0.3), Color(0.75164,0.60648,0.22648),
                                  Color(0.316228,0.316228,0.316228),
-                                 12.8,1.1,1.0,NULL);
+                                 12.8,1.1,1.0,NULL,NULL,NULL);
     
     // russell's edit, redefine mateiral for glossy effect
     Material *gold_glossy=new Material(Color(0.3, 0.3, 0.3), Color(0.75164,0.60648,0.22648),
                                 Color(0.628281, 0.555802, 0.366065),
-                                51.2,0.0,0.05,NULL);
+                                51.2,0.0,0.05,NULL,NULL,NULL);
     
     Material *jade_glossy=new Material(Color(0, 0, 0), Color(0.54,0.89,0.63),
                                 Color(0.316228,0.316228,0.316228),
-                                12.8,0.0,0.15,NULL);
+                                12.8,0.0,0.15,NULL,NULL,NULL);
     
     Material* waveMat=createMat("wave03.bmp");
 
@@ -155,7 +155,7 @@ void init(){
     //all temporary, can delete at any time
     
     SceneNode* sphere2 = new SceneNode(new UnitSphere(), gold);
-//    scene.push_back(sphere2);
+     //scene.push_back(sphere2);
     
     
     double factor1[3] = { 1.0, 2.0, 1.0 };
@@ -187,6 +187,63 @@ void init(){
     
     
 }
+
+
+//for environment mapping
+Material* init_env(){
+    Material *gold=new Material(Color(0.3, 0.3, 0.3), Color(0.75164,0.60648,0.22648),
+                                Color(0.628281, 0.555802, 0.366065),
+                                51.2,0.0,1.0,NULL,NULL,NULL);
+    
+    unsigned long int* twidth= new unsigned long int();;
+    long int* theight=new long int();
+    //    unsigned char*** texture=new unsigned char**[3];
+    
+    unsigned char* canyon[3];
+    for(unsigned i=0;i<3;i++){
+        canyon[i]=new unsigned char();
+    }
+    bool read=bmp_read ( "canyon.bmp", twidth, theight,&canyon[0], &canyon[1], &canyon[2]);
+    if(read){
+        std::cout<<"error loading texture"<<std::endl;
+    }
+    Material *canyonMat = new Material(Color(0, 0, 0), Color(0, 0, 0),
+                       Color(0, 0, 0),
+                       51.2,0.0,1.0,canyon,*twidth,*theight);
+    
+    
+    unsigned char* skysea[3];
+    for(unsigned i=0;i<3;i++){
+        skysea[i]=new unsigned char();
+    }
+    read=bmp_read ("cloudySea.bmp", twidth, theight,&skysea[0], &skysea[1], &skysea[2]);
+    if(read){
+        std::cout<<"error loading texture"<<std::endl;
+    }
+    Material *skyseaMat = new Material(Color(0, 0, 0), Color(0, 0, 0),
+                                       Color(0, 0, 0),
+                                       51.2,0.0,1.0,skysea,*twidth,*theight);
+    
+    
+    //standard objects in the scene by default
+    //all temporary, can delete at any time
+    double factor1[3] = { 6.0, 6.0, 1.0 };
+    double factor2[3] = { 2.0, 2.0, 2.0 };
+    SceneNode* sphere2 = new SceneNode(new UnitSphere(), gold);
+    //scene.push_back(sphere2);
+    sphere2->translate(Vector3D(-2, 0, -4));
+    sphere2->scale(Point3D(0,0,0),factor2);
+    SceneNode* plane = new SceneNode(new UnitSquare(), canyonMat);
+    //scene.push_back(plane);
+    plane->translate(Vector3D(0, 0, -7));
+    plane->scale(Point3D(0,0,0),factor1);
+    return skyseaMat;
+}
+
+
+
+
+
 
 void hard_shadow(Raytracer& raytracer,int width,int height){
     
@@ -288,6 +345,66 @@ void DOF(Raytracer& raytracer,int width,int height){
     }
 }
 
+void env_mapping(Raytracer& raytracer,int width,int height,Material* mat){
+    LightList light_list;
+    
+    Camera camera1(Point3D(0, 0, 1), Vector3D(-4, 2, -6), Vector3D(0, 1, 0), 60.0);//0,0,-1 init
+    Image image1(width, height);
+    raytracer.render_env(camera1, scene, light_list, image1,mat); //render 3D scene to image
+    image1.flushPixelBuffer("view1.bmp"); //save rendered image to file
+    
+    //right forward up
+    Camera camera2(Point3D(4, 2, 1), Vector3D(4, 2, -6), Vector3D(0, 1, 0), 60.0);//init -4 -2 -6
+    Image image2(width, height);
+    raytracer.render_env(camera2, scene, light_list, image2,mat);
+    image2.flushPixelBuffer("view2.bmp");
+    
+    //right forward bottom
+    Camera camera3(Point3D(-4, 2, 1), Vector3D(4, -2, -6), Vector3D(0, 1, 0), 60.0);//init -4 -2 -6
+    Image image3(width, height);
+    raytracer.render_env(camera3, scene, light_list, image3,mat);
+    image3.flushPixelBuffer("view3.bmp");
+    
+    //right back top
+//    Camera camera4(Point3D(0, 0, 0), Vector3D(4, 2, 6), Vector3D(0, 1, 0), 60.0);//init -4 -2 -6
+//    Image image4(width, height);
+//    raytracer.render_env(camera4, scene, light_list, image4,mat);
+//    image4.flushPixelBuffer("view4.bmp");
+//    //right back bottom
+//    Camera camera5(Point3D(0, 0, 0), Vector3D(4, -2, 6), Vector3D(0, 1, 0), 60.0);//init -4 -2 -6
+//    Image image5(width, height);
+//    raytracer.render_env(camera5, scene, light_list, image5,mat);
+//    image5.flushPixelBuffer("view5.bmp");
+//
+//    Camera camera6(Point3D(0, 0, 0), Vector3D(-4, -2, 6), Vector3D(0, 1, 0), 60.0);//init -4 -2 -6
+//    Image image6(width, height);
+//    raytracer.render_env(camera6, scene, light_list, image6,mat);
+//    image6.flushPixelBuffer("view6.bmp");
+//
+//    Camera camera7(Point3D(0, 0, 0), Vector3D(-4, 2, 6), Vector3D(0, 1, 0), 60.0);//init -4 -2 -6
+//    Image image7(width, height);
+//    raytracer.render_env(camera7, scene, light_list, image7,mat);
+//    image7.flushPixelBuffer("view7.bmp");
+//
+//    Camera camera8(Point3D(0, 0, 0), Vector3D(-4, -2, -6), Vector3D(0, 1, 0), 60.0);//init -4 -2 -6
+//    Image image8(width, height);
+//    raytracer.render_env(camera8, scene, light_list, image8,mat);
+//    image8.flushPixelBuffer("view8.bmp");
+    
+    
+    
+    
+    
+    // Free memory
+    for (size_t i = 0; i < scene.size(); ++i) {
+        delete scene[i];
+    }
+    
+    for (size_t i = 0; i < light_list.size(); ++i) {
+        delete light_list[i];
+    }
+}
+
 int main(int argc, char* argv[])
 {
     // Build your scene and setup your camera here, by calling
@@ -298,14 +415,18 @@ int main(int argc, char* argv[])
     Raytracer raytracer;
     LightList light_list;
     
-    int width = 1920;
-    int height = 1080;
+//    //2K
+//    int width = 1920;
+//    int height = 1080;
     
-    //for testing purpose
-//    int width = 640;
-//    int height = 480;
+    //4K
+//    int width = 4096;
+//    int height = 2160;
     
-    
+//    int width = 3200;
+//    int height = 2400;
+    int width = 640;
+    int height =480;
     if (argc == 3) {
         width = atoi(argv[1]);
         height = atoi(argv[2]);

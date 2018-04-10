@@ -129,9 +129,10 @@ Color operator +(const Color& u, const Color& v);
 std::ostream& operator <<(std::ostream& o, const Color& c);
 
 struct Material {
-    Material(Color ambient, Color diffuse, Color specular, double exp,double focu,double alph,unsigned char* texturein[3]) :
+    Material(Color ambient, Color diffuse, Color specular, double exp,double focu,double alph,unsigned char* texturein[3],
+             unsigned long int w,long int h) :
     ambient(ambient), diffuse(diffuse), specular(specular),
-    specular_exp(exp),eta(focu),glossy_idx(alph) {
+    specular_exp(exp),eta(focu),glossy_idx(alph),twidth(w),theight(h){
         if(texturein){
             texture[0]=texturein[0];
             texture[1]=texturein[1];
@@ -156,6 +157,8 @@ struct Material {
     double eta;
     double glossy_idx;
     unsigned char* texture[3];
+    unsigned long int twidth;
+    long int theight;
 };
 
 struct Intersection {
