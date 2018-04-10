@@ -442,11 +442,12 @@ int main(int argc, char* argv[])
         width = atoi(argv[1]);
         height = atoi(argv[2]);
     }
-   // init();
-    Material *parse = init_env();
+    init();
     clock_t timeStart = clock();
-    env_mapping(raytracer,width,height,parse);
-    //hard_shadow(raytracer,width,height);
+//    Material *parse = init_env();
+//    clock_t timeStart = clock();
+//    env_mapping(raytracer,width,height,parse);
+    hard_shadow(raytracer,width,height);
     clock_t timeEnd = clock();
     printf("render time: %04.2f (sec)\n",(double)(timeEnd - timeStart) / CLOCKS_PER_SEC);//print run time
     return 0;
