@@ -140,7 +140,7 @@ void init(){
     SceneNode* lens = new SceneNode(new UnitSphere(), glass);
 //    scene.push_back(lens);
     SceneNode* plane = new SceneNode(new UnitSquare(), rainbowMat);
-    scene.push_back(plane);
+//    scene.push_back(plane);
     
     //added a cylinder
     SceneNode* cylinder = new SceneNode(new UnitCylinder(),glass);
