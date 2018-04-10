@@ -21,6 +21,9 @@ class Raytracer {
     void render_dof(Camera& camera, Scene& scene, LightList& light_list, Image& image,double
                     focuspoint);
     
+    //added for environmemt mapping
+    void render_env(Camera& camera, Scene& scene, LightList& light_list, Image& image,Material*Mat);
+    Color shadeRay_Env(Ray3D& ray, Scene& scene, LightList& light_list,Material*Mat);
     private:
     
     // Return the color of the ray after intersection and shading, call
@@ -43,4 +46,4 @@ class Raytracer {
 
 
 double random_double(double fMin, double fMax);
-
+void Shade_Env(Ray3D& ray,Material*Mat);
