@@ -42,7 +42,7 @@ Material* createMat(char const * s){
     
     return new Material(Color(0, 0, 0), Color(0, 0, 0),
                                         Color(0, 0, 0),
-                                        51.2,0.0,1.0,rgb);
+                                        51.2,0.0,1.0,rgb,*twidth,*theight);
 }
 
 
