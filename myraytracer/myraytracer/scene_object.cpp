@@ -815,3 +815,11 @@ SceneNode::SceneNode(UnitCylinder* inobj, Material* mat){
     this->bbox.b=Point3D(1.5,1.5,1.5);;
     this->bbox.updateLongestAxis();
 }
+
+bool UnitCube::intersect(Ray3D &ray, const Matrix4x4 &worldToModel, const Matrix4x4 &modelToWorld){
+    Point3D origin = worldToModel * ray.origin;
+    Vector3D direction = worldToModel * ray.dir;
+    direction.normalize();
+    double threshold = 0.00000001;
+    return false;
+}

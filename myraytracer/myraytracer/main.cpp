@@ -116,12 +116,12 @@ void init(){
                     thisTri[i]=Point3D(vx,vy,vz);
                     v++;
                 }
-                SceneNode* thisT = new SceneNode(new Triangle(thisTri[0],thisTri[1],thisTri[2]),jade);
+                SceneNode* thisT = new SceneNode(new Triangle(thisTri[0],thisTri[1],thisTri[2]),jade_glossy);
                 //order:TRS
-//                thisT->translate(Vector3D(0,-3,-5));
+                thisT->translate(Vector3D(0,-3,20));
 //                thisT->rotate('y',45);
                 thisT->rotate('x',-90);
-                double Tfactor[3] = { 0.05, 0.05, 0.05 };
+                double Tfactor[3] = { 0.07, 0.07, 0.07 };
                 thisT->scale(Point3D (0,0,0), Tfactor);
                 scene.push_back(thisT);
             }
@@ -140,7 +140,7 @@ void init(){
     SceneNode* lens = new SceneNode(new UnitSphere(), glass);
 //    scene.push_back(lens);
     SceneNode* plane = new SceneNode(new UnitSquare(), rainbowMat);
-//    scene.push_back(plane);
+    scene.push_back(plane);
     
     //added a cylinder
     SceneNode* cylinder = new SceneNode(new UnitCylinder(),glass);
@@ -159,7 +159,7 @@ void init(){
     
     
     double factor1[3] = { 1.0, 2.0, 1.0 };
-    sphere->translate(Vector3D(0, 0, -5));
+    sphere->translate(Vector3D(0, 0, 0));
     sphere->rotate('x', 0);
     sphere->rotate('z', 45);
     sphere->scale(Point3D(0, 0, 0), factor1);
@@ -167,8 +167,8 @@ void init(){
     double lensfactor[3] = { 1.0, 1.0, 1.0 };
     lens->translate(Vector3D(0, 0, -4));
     lens->scale(Point3D(0,0,0), lensfactor);
-    double factor2[3] = { 6.0, 6.0, 1.0 };
-    plane->translate(Vector3D(0, 0, -7));
+    double factor2[3] = { 100.0, 100.0, 100.0 };
+    plane->translate(Vector3D(0, 10, -50));
     //plane->rotate('z', 45);
    // plane->translate(Vector3D(0, 0, -7));
     //plane->rotate('x',180 );

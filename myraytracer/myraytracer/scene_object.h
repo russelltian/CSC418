@@ -224,6 +224,12 @@ public:
                    const Matrix4x4& modelToWorld);
 };
 
+class UnitCube: public SceneObject{
+public:
+    bool intersect(Ray3D& ray, const Matrix4x4& worldToModel,
+                   const Matrix4x4& modelToWorld);
+};
+
 class Triangle: public SceneObject{
     public:
     Triangle(Point3D origin,Point3D iu, Point3D iv);
