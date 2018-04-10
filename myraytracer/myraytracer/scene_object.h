@@ -161,7 +161,7 @@ struct SceneNode {
     Material* mat;
     
     bool ismesh;
-	bool firstTouch;
+    bool firstTouch;
     Box bbox;
     Box getBox(){
         return bbox;

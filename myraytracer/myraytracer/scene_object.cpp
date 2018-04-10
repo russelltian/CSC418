@@ -482,7 +482,7 @@ SceneNode::SceneNode(Triangle* obj, Material* mat){
     this->obj=obj;
     this->mat=mat;
     this->ismesh=true;
-	this->firstTouch = true;
+    this->firstTouch = true;
     Point3D o=obj->o;
     Vector3D u=obj->u;
     Vector3D v=obj->v;
