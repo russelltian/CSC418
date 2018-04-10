@@ -188,69 +188,13 @@ void init(){
     
 }
 
-
-//for environment mapping
-Material* init_env(){
-    Material *gold=new Material(Color(0.3, 0.3, 0.3), Color(0.75164,0.60648,0.22648),
-                                Color(0.628281, 0.555802, 0.366065),
-                                51.2,0.0,1.0,NULL,NULL,NULL);
-    
-    unsigned long int* twidth= new unsigned long int();;
-    long int* theight=new long int();
-    //    unsigned char*** texture=new unsigned char**[3];
-    
-    unsigned char* canyon[3];
-    for(unsigned i=0;i<3;i++){
-        canyon[i]=new unsigned char();
-    }
-    bool read=bmp_read ( "canyon.bmp", twidth, theight,&canyon[0], &canyon[1], &canyon[2]);
-    if(read){
-        std::cout<<"error loading texture"<<std::endl;
-    }
-    Material *canyonMat = new Material(Color(0, 0, 0), Color(0, 0, 0),
-                       Color(0, 0, 0),
-                       51.2,0.0,1.0,canyon,*twidth,*theight);
-    
-    
-    unsigned char* skysea[3];
-    for(unsigned i=0;i<3;i++){
-        skysea[i]=new unsigned char();
-    }
-    read=bmp_read ("cloudySea.bmp", twidth, theight,&skysea[0], &skysea[1], &skysea[2]);
-    if(read){
-        std::cout<<"error loading texture"<<std::endl;
-    }
-    Material *skyseaMat = new Material(Color(0, 0, 0), Color(0, 0, 0),
-                                       Color(0, 0, 0),
-                                       51.2,0.0,1.0,skysea,*twidth,*theight);
-    
-    
-    //standard objects in the scene by default
-    //all temporary, can delete at any time
-    double factor1[3] = { 6.0, 6.0, 1.0 };
-    double factor2[3] = { 2.0, 2.0, 2.0 };
-    SceneNode* sphere2 = new SceneNode(new UnitSphere(), gold);
-    //scene.push_back(sphere2);
-    sphere2->translate(Vector3D(-2, 0, -4));
-    sphere2->scale(Point3D(0,0,0),factor2);
-    SceneNode* plane = new SceneNode(new UnitSquare(), canyonMat);
-    //scene.push_back(plane);
-    plane->translate(Vector3D(0, 0, -7));
-    plane->scale(Point3D(0,0,0),factor1);
-    return skyseaMat;
-}
-
-
-
-
-
-
 void hard_shadow(Raytracer& raytracer,int width,int height){
     
     // Defines a point light source.
     LightList light_list;
 //  PointLight* pLight = new PointLight(Point3D(0,0,5), Color(0.9,0.9,0.9));
     PointLight* pLight = new PointLight(Point3D(-3,-4,5), Color(0.9,0.9,0.9));
+  //  PointLight* pLight = new PointLight(Point3D(-5,-5,10), Color(0.9,0.9,0.9));
     light_list.push_back(pLight);
     
     // temp
@@ -270,6 +214,7 @@ void hard_shadow(Raytracer& raytracer,int width,int height){
     // Render it from a different point of view.
 //    Camera camera2(Point3D(4, 2, 1), Vector3D(-4, -2, -6), Vector3D(0, 1, 0), 60.0);
     Camera camera2(Point3D(0, -3, 5), Vector3D(0, 3, -5), Vector3D(0, 1, 0), 60.0);
+  //  Camera camera2(Point3D(0, -10, 3), Vector3D(0, 10, -3), Vector3D(0, 1, 0), 60.0);
     Image image2(width, height);
     raytracer.render(camera2, scene, light_list, image2);
     image2.flushPixelBuffer("view2.bmp");
@@ -431,10 +376,11 @@ int main(int argc, char* argv[])
         width = atoi(argv[1]);
         height = atoi(argv[2]);
     }
-    init();
-    std::cout<<"finished initialization"<<std::endl;
+   // init();
+    Material *parse = init_env();
     clock_t timeStart = clock();
-    hard_shadow(raytracer,width,height);
+    env_mapping(raytracer,width,height,parse);
+    //hard_shadow(raytracer,width,height);
     clock_t timeEnd = clock();
     printf("render time: %04.2f (sec)\n",(double)(timeEnd - timeStart) / CLOCKS_PER_SEC);//print run time
     return 0;

@@ -47,3 +47,4 @@ class Raytracer {
 
 double random_double(double fMin, double fMax);
 void Shade_Env(Ray3D& ray,Material*Mat);
+
