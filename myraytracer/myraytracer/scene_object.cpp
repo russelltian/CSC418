@@ -168,7 +168,7 @@ bool UnitCylinder::intersect(Ray3D& ray, const Matrix4x4& worldToModel,const Mat
             ray.intersection.t_value =t4;
             ray.intersection.point = modelToWorld*p;
             ray.intersection.normal = transNorm(worldToModel, normal);
-//            ray.intersection.none = false;
+            ray.intersection.none = false;
             return_true = true;
         }
     }
@@ -811,15 +811,38 @@ SceneNode::SceneNode(UnitCylinder* inobj, Material* mat){
     this->obj=inobj;
     this->mat=mat;
     this->ismesh=false;
-    this->bbox.a=Point3D(-1.5,-1.5,-1.5);
-    this->bbox.b=Point3D(1.5,1.5,1.5);;
+    this->bbox.a=Point3D(-1,-1,-1.5);
+    this->bbox.b=Point3D(1,1,1.5);;
     this->bbox.updateLongestAxis();
 }
 
 bool UnitCube::intersect(Ray3D &ray, const Matrix4x4 &worldToModel, const Matrix4x4 &modelToWorld){
     Point3D origin = worldToModel * ray.origin;
     Vector3D direction = worldToModel * ray.dir;
-    direction.normalize();
+   // direction.normalize();
     double threshold = 0.00000001;
+    int side = -1; // first hit side,0,1,2 for x,y,z
+    double xmax = 0.5; double xmin = -0.5;
+    double ymax = 0.5; double ymin = -0.5;
+    double zmax = 0.5; double zmin = -0.5;
+    double tx1 = (xmin - origin[0])*(1.0/direction[0]);
+    double tx2 = (xmax - origin[0])*(1.0/direction[0]);
+    
+    double tmin = min(tx1, tx2);
+    double tmax = max(tx1, tx2);
+    
+    double ty1 = (ymin - origin[1])*(1.0/direction[1]);
+    double ty2 = (ymax - origin[1])*(1.0/direction[1]);
+    
+    tmin = max(tmin, min(ty1, ty2));
+    tmax = min(tmax, max(ty1, ty2));
+    
+    double tz1 = (zmin - origin[2])*(1.0/direction[2]);
+    double tz2 = (zmax - origin[2])*(1.0/direction[2]);
+    
+    tmin = max(tmin, min(tz1, tz2));
+    tmax = min(tmax, max(tz1, tz2));
+    
+    if(tmax < tmin)return false;
     return false;
 }

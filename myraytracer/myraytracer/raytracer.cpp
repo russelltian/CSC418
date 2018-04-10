@@ -13,6 +13,8 @@
 #include <cstdlib>
 using namespace std;
 KDNode* ROOT;
+
+bool created=false;
 void Raytracer::traverseScene(Scene& scene, Ray3D& ray)  {
 //    for (size_t i = 0; i < scene.size(); ++i) {
 //        SceneNode* node = scene[i];
@@ -160,8 +162,11 @@ void createBoxes(Scene& scene){
 }
 
 void Raytracer::render(Camera& camera, Scene& scene, LightList& light_list, Image& image) {
+    if(created){
+        createBoxes(scene);
+        created=true;
+    }
     
-    createBoxes(scene);
     
     ROOT=build(scene, 0);
     
@@ -232,7 +237,10 @@ void Raytracer::render(Camera& camera, Scene& scene, LightList& light_list, Imag
 //added to do depth of field render
 //we give the camera a thin lens instead of a pin hole
 void Raytracer::render_dof(Camera& camera, Scene& scene, LightList& light_list, Image& image, double focus_index) {
-    createBoxes(scene);
+    if(created){
+        createBoxes(scene);
+        created=true;
+    }
     
     computeTransforms(scene);
     
