@@ -101,7 +101,7 @@ public:
         tmax = min(tmax, max(tz1, tz2));
         
         return tmax >= tmin;
-//        return true;
+        //        return true;
     }
     Point3D a;//min
     Point3D b;//max
@@ -110,7 +110,7 @@ public:
 };
 
 class SceneObject {
-    public:
+public:
     // Returns true if an intersection occured, false otherwise.
     virtual bool intersect(Ray3D&, const Matrix4x4&, const Matrix4x4&) = 0;
     virtual ~SceneObject(){}
@@ -139,7 +139,7 @@ struct SceneNode {
     SceneNode(UnitSquare* inobj, Material* mat);
     
     SceneNode(UnitCylinder* inobj, Material* mat);
-
+    
     
     ~SceneNode() {
         if (obj) delete obj;
@@ -188,7 +188,7 @@ public:
     KDNode* right;
     vector<SceneNode*> items;
     KDNode(){};
-//    bool hit(KDNode* node, Ray3D& ray);
+    //    bool hit(KDNode* node, Ray3D& ray);
     Box bbox;
     
 };
@@ -199,21 +199,21 @@ bool KDHit(KDNode* node,KDNode* root, Ray3D& ray);
 // Example primitive you can create, this is a unit square on
 // the xy-plane.
 class UnitSquare : public SceneObject {
-    public:
+public:
     bool intersect(Ray3D& ray, const Matrix4x4& worldToModel,
                    const Matrix4x4& modelToWorld);
 };
 
 class UnitSphere : public SceneObject {
-    public:
+public:
     bool intersect(Ray3D& ray, const Matrix4x4& worldToModel,
                    const Matrix4x4& modelToWorld);
 };
 
 class UnitCylinder : public SceneObject {
-    public:
+public:
     bool intersect(Ray3D& ray, const Matrix4x4& worldToModel,
-    const Matrix4x4& modelToWorld);
+                   const Matrix4x4& modelToWorld);
     
 };
 
@@ -231,17 +231,12 @@ public:
 };
 
 class Triangle: public SceneObject{
-    public:
+public:
     Triangle(Point3D origin,Point3D iu, Point3D iv);
     bool intersect(Ray3D& ray, const Matrix4x4& worldToModel,
-                    const Matrix4x4& modelToWorld);
+                   const Matrix4x4& modelToWorld);
     Point3D o;
     Vector3D u;
     Vector3D v;
 };
 
-class UnitCube: public SceneObject{
-public:
-    bool intersect(Ray3D& ray, const Matrix4x4& worldToModel,
-                   const Matrix4x4& modelToWorld);
-};
