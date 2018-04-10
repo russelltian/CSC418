@@ -12,34 +12,37 @@
 #include <iostream>
 #include <cstdlib>
 using namespace std;
-
+KDNode* ROOT;
 void Raytracer::traverseScene(Scene& scene, Ray3D& ray)  {
-    for (size_t i = 0; i < scene.size(); ++i) {
-        SceneNode* node = scene[i];
-        
-        if (node->obj->intersect(ray, node->worldToModel, node->modelToWorld)) {
-            //if the material is transparent
-            if(node->mat->eta>0){
-                double eta=1.0/node->mat->eta;
-                Point3D origin=ray.intersection.point+0.000001*ray.dir;
-                Vector3D normal=ray.intersection.normal;
-                normal.normalize();
-                Vector3D in_ray=ray.dir;
-                in_ray.normalize();
-                
-                double c1=normal.dot(-in_ray);
-                double c2=sqrt(1.0-eta*eta*(1.0-c1*c1));
-                Vector3D newDir=eta*(in_ray+c1*normal)-c2*normal;
-                newDir.normalize();
-                Ray3D newRay(origin,newDir);
-                traverseScene(scene, newRay);
-                ray=newRay;
-                
-            }else{
-                ray.intersection.mat = node->mat;
-                ray.intersection.none = false;
-            }
-        }
+//    for (size_t i = 0; i < scene.size(); ++i) {
+//        SceneNode* node = scene[i];
+//
+//        if (node->obj->intersect(ray, node->worldToModel, node->modelToWorld)) {
+//            //if the material is transparent
+//            if(node->mat->eta>0){
+//                double eta=1.0/node->mat->eta;
+//                Point3D origin=ray.intersection.point+0.000001*ray.dir;
+//                Vector3D normal=ray.intersection.normal;
+//                normal.normalize();
+//                Vector3D in_ray=ray.dir;
+//                in_ray.normalize();
+//
+//                double c1=normal.dot(-in_ray);
+//                double c2=sqrt(1.0-eta*eta*(1.0-c1*c1));
+//                Vector3D newDir=eta*(in_ray+c1*normal)-c2*normal;
+//                newDir.normalize();
+//                Ray3D newRay(origin,newDir);
+//                traverseScene(scene, newRay);
+//                ray=newRay;
+//
+//            }else{
+//                ray.intersection.mat = node->mat;
+//                ray.intersection.none = false;
+//            }
+//        }
+//    }
+    if(KDHit(ROOT,ROOT, ray)){
+//        cout<<"hits!"<<endl;
     }
 }
 
@@ -150,7 +153,18 @@ Color Raytracer::shadeRay(Ray3D& ray, Scene& scene, LightList& light_list,int bo
     return col;
 }
 
+void createBoxes(Scene& scene){
+    for(int i=0;i<scene.size();i++){
+        scene[i]->bbox.transForm(scene[i]->trans);
+    }
+}
+
 void Raytracer::render(Camera& camera, Scene& scene, LightList& light_list, Image& image) {
+    
+    createBoxes(scene);
+    
+    ROOT=build(scene, 0);
+    
     computeTransforms(scene);
     
     Matrix4x4 viewToWorld;
@@ -218,6 +232,8 @@ void Raytracer::render(Camera& camera, Scene& scene, LightList& light_list, Imag
 //added to do depth of field render
 //we give the camera a thin lens instead of a pin hole
 void Raytracer::render_dof(Camera& camera, Scene& scene, LightList& light_list, Image& image, double focus_index) {
+    createBoxes(scene);
+    
     computeTransforms(scene);
     
     Matrix4x4 viewToWorld;

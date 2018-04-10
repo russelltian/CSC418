@@ -168,7 +168,7 @@ bool UnitCylinder::intersect(Ray3D& ray, const Matrix4x4& worldToModel,const Mat
             ray.intersection.t_value =t4;
             ray.intersection.point = modelToWorld*p;
             ray.intersection.normal = transNorm(worldToModel, normal);
-            ray.intersection.none = false;
+//            ray.intersection.none = false;
             return_true = true;
         }
     }
@@ -359,6 +359,7 @@ void SceneNode::rotate(char axis, double angle) {
         }
         if (i == 0) {
             this->trans = this->trans*rotation;
+//            this->bbox.transForm(rotation);
             angle = -angle;
         }
         else {
@@ -373,10 +374,12 @@ void SceneNode::translate(Vector3D trans) {
     translation[0][3] = trans[0];
     translation[1][3] = trans[1];
     translation[2][3] = trans[2];
+//    this->bbox.transForm(translation);
     this->trans = this->trans*translation;
     translation[0][3] = -trans[0];
     translation[1][3] = -trans[1];
     translation[2][3] = -trans[2];
+    
     this->invtrans = translation*this->invtrans;
 }
 
@@ -390,6 +393,7 @@ void SceneNode::scale(Point3D origin, double factor[3] ) {
     scale[2][2] = factor[2];
     scale[2][3] = origin[2] - factor[2] * origin[2];
     this->trans = this->trans*scale;
+//    this->bbox.transForm(scale);
     scale[0][0] = 1/factor[0];
     scale[0][3] = origin[0] - 1/factor[0] * origin[0];
     scale[1][1] = 1/factor[1];
@@ -439,10 +443,28 @@ SceneNode::SceneNode(Triangle* obj, Material* mat){
     this->obj=obj;
     this->mat=mat;
     this->ismesh=true;
-	this->firstTouch = true;
+    this->firstTouch = true;
     Point3D o=obj->o;
     Vector3D u=obj->u;
     Vector3D v=obj->v;
+    
+    //handle triangles
+    Point3D p[3];
+    p[0]=o;
+    p[1]=o+u;
+    p[2]=o+v;
+    Point3D min(999999999,999999999,999999999);
+    Point3D max(-999999999,-999999999,-999999999);
+    for(int i=0;i<3;i++){
+        for(int j=0;j<3;j++){
+            min[j]=fmin(p[i][j],min[j]);
+            max[j]=fmax(p[i][j],max[j]);
+        }
+    }
+    this->bbox.a=min;
+    this->bbox.b=max;
+    this->bbox.updateLongestAxis();
+    
     Vector3D normal=u.cross(v);
     this->normal=normal;
     this->normal.normalize();
@@ -579,6 +601,162 @@ SceneNode::SceneNode(Triangle* obj, Material* mat){
     
 
     this->worldToModel=inv;
+}
+KDNode * build(vector<SceneNode*>& itemsin,int depth){
+//    cout<<depth<<endl;
+    KDNode* node = new KDNode();
+    node->items=itemsin;
+    node->left=NULL;
+    node->right=NULL;
+//    node->bbox=Box();
+    if(itemsin.size()==0){
+        return node;
+    }else if(itemsin.size()==1){
+        node->bbox=itemsin[0]->getBox();
+        node->left=NULL;
+        node->right=NULL;
+        return node;
+    }
+    node->bbox=itemsin[0]->getBox();
+    
+    for(int i=0;i<itemsin.size();i++){
+        node->bbox.expand(itemsin[i]->getBox());
+    }
+    Point3D mid(0,0,0);
+    for(int i=0;i<itemsin.size();i++){
+        mid=mid+(1.0/itemsin.size())*itemsin[i]->bbox.mid;
+    }
+    vector<SceneNode*> left;
+    vector<SceneNode*> right;
+    int axis=node->bbox.longestAxis;
+    for(int i=0;i<itemsin.size();i++){
+        switch (axis) {
+            case 0:
+                if(mid[0]>=itemsin[i]->bbox.mid[0]){
+                    right.push_back(itemsin[i]);
+                }else{
+                    left.push_back(itemsin[i]);
+                }
+                break;
+            case 1:
+                if(mid[1]>=itemsin[i]->bbox.mid[1]){
+                    right.push_back(itemsin[i]);
+                }else{
+                    left.push_back(itemsin[i]);
+                }
+                break;
+            case 2:
+                if(mid[2]>=itemsin[i]->bbox.mid[2]){
+                    right.push_back(itemsin[i]);
+                }else{
+                    left.push_back(itemsin[i]);
+                }
+                break;
+                
+            default:
+                cout<<"???"<<endl;
+                break;
+        }
+    }
+    if(left.size()==0&&right.size()>0) left=right;
+    if(right.size()==0&&left.size()>0) right=left;
+    
+    int matches=0;
+    for (int i=0;i<left.size();i++){
+        for(int j=0;j<right.size();j++){
+            if(left[i]==right[j]){
+                matches++;
+            }
+        }
+    }
+    if((float)matches/left.size()<0.1&&(float)matches/right.size()<0.1){
+        node->left=build(left,depth+1);
+        node->right=build(right,depth+1);
+    }
+    else{
+        node->left=NULL;
+        node->right=NULL;
+    }
+//    else{
+//        node->left=new KDNode();
+//        node->right=new KDNode();
+//        node->left->items=vector<SceneNode*>();
+//        node->right->items=vector<SceneNode*>();
+//    }
+    
+//    if(left.size()>0){
+//        node->left=build(left,depth+1);
+//    }
+//    if(right.size()>0){
+//        node->right=build(right,depth+1);
+//    }
+    return node;
+}
+
+bool KDHit(KDNode* node,KDNode* root, Ray3D& ray){
+    if(node&&node->bbox.hit(ray)){
+        bool hit=false;
+//        if(node->left->items.size()>0||node->right->items.size()>0){
+//            bool leftHit=KDHit(node->left,root,ray);
+//            bool rightHit=KDHit(node->right,root,ray);
+//            if(leftHit||rightHit){
+//                std::cout<<"hello!!!"<<endl;
+//            }
+//            return leftHit||rightHit;
+//        }
+        if(node->left&&node->right){
+            bool leftHit=KDHit(node->left,root,ray);
+            bool rightHit=KDHit(node->right,root,ray);
+            return leftHit||rightHit;
+        }else if(node->left){
+            return KDHit(node->left,root,ray);
+        }else if(node->right){
+            return KDHit(node->right,root,ray);
+        }
+        else{
+            for(int i=0;i<node->items.size();i++){
+                SceneNode* thisItem=node->items[i];
+                SceneObject* thisObj=thisItem->obj;
+                if(thisObj->intersect(ray, thisItem->worldToModel, thisItem->modelToWorld)){
+                    
+                    if(thisItem->mat->eta>0){
+                        double eta=1.0/thisItem->mat->eta;
+                        Point3D origin=ray.intersection.point+0.000001*ray.dir;
+                        Vector3D normal=ray.intersection.normal;
+                        normal.normalize();
+                        Vector3D in_ray=ray.dir;
+                        in_ray.normalize();
+        
+                        double c1=normal.dot(-in_ray);
+                        double c2=sqrt(1.0-eta*eta*(1.0-c1*c1));
+                        Vector3D newDir=eta*(in_ray+c1*normal)-c2*normal;
+                        newDir.normalize();
+                        Ray3D newRay(origin,newDir);
+                        KDHit(root,root, newRay);
+                        ray=newRay;
+                        hit=!ray.intersection.none;
+                    }else{
+                        ray.intersection.mat = thisItem->mat;
+                        ray.intersection.none = false;
+                        hit=true;
+                    }
+                    
+                }
+            }
+        }
+        return hit;
+    }
+    return false;
+}
+
+SceneNode::SceneNode(UnitSphere* inobj, Material* mat){
+    this->obj=inobj;
+    this->mat=mat;
+    this->ismesh=false;
+    
+    this->bbox.a=Point3D(-1,-1,-1);
+    this->bbox.b=Point3D(1,1,1);;
+    this->bbox.updateLongestAxis();
 }
 
 

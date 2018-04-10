@@ -28,6 +28,90 @@ using namespace std;
 Scene scene;
 
 
+//for environment mapping
+Material* init_env(){
+    Material *gold=new Material(Color(0.3, 0.3, 0.3), Color(0.75164,0.60648,0.22648),
+                                Color(0.628281, 0.555802, 0.366065),
+                                51.2,0.0,1.0,NULL,NULL,NULL);
+    
+    unsigned long int* twidth= new unsigned long int();;
+    long int* theight=new long int();
+    
+    //canyon scene
+    unsigned char* canyon[3];
+    for(unsigned i=0;i<3;i++){
+        canyon[i]=new unsigned char();
+    }
+    bool read=bmp_read ( "canyon.bmp", twidth, theight,&canyon[0], &canyon[1], &canyon[2]);
+    if(read){
+        std::cout<<"error loading texture"<<std::endl;
+    }
+    Material *canyonMat = new Material(Color(0, 0, 0), Color(0, 0, 0),
+                                       Color(0, 0, 0),
+                                       51.2,0.0,1.0,canyon,*twidth,*theight);
+    
+    //skysea scene
+    unsigned char* skysea[3];
+    for(unsigned i=0;i<3;i++){
+        skysea[i]=new unsigned char();
+    }
+    read=bmp_read ("cloudySea.bmp", twidth, theight,&skysea[0], &skysea[1], &skysea[2]);
+    if(read){
+        std::cout<<"error loading texture"<<std::endl;
+    }
+    Material *skyseaMat = new Material(Color(0, 0, 0), Color(0, 0, 0),
+                                       Color(0, 0, 0),
+                                       51.2,0.0,1.0,skysea,*twidth,*theight);
+    
+    //wood mateiral
+    unsigned char* wood[3];
+    for(unsigned i=0;i<3;i++){
+        wood[i]=new unsigned char();
+    }
+    read=bmp_read ( "wood.bmp", twidth, theight,&wood[0], &wood[1], &wood[2]);
+    if(read){
+        std::cout<<"error loading texture"<<std::endl;
+    }
+    
+    Material *woodMat = new Material(Color(0, 0, 0), Color(0.75164,0.60648,0.22648),
+                                     Color(0.628281, 0.555802, 0.366065),
+                                     51.2,0.0,1.0,wood,*twidth,*theight);
+    //standard objects in the scene by default
+    double factor1[3] = { 6.0, 6.0, 1.0 };
+    double factor2[3] = { 2.0, 2.0, 2.0 };
+    //SceneNode* sphere2 = new SceneNode(new UnitSphere(), gold);
+    //scene.push_back(sphere2);
+    //   sphere2->translate(Vector3D(-2, 0, -4));
+    //   sphere2->scale(Point3D(0,0,0),factor2);
+    SceneNode* box = new SceneNode(new UnitCube(), gold);
+    scene.push_back(box);
+    box->translate(Vector3D(-2, 0, -4));
+    box->scale(Point3D(0,0,0),factor2);
+    SceneNode* plane = new SceneNode(new UnitSquare(), woodMat);
+    scene.push_back(plane);
+    plane->translate(Vector3D(0, 0, -7));
+    plane->scale(Point3D(0,0,0),factor1);
+    return skyseaMat;
+}
+
+Material* createMat(char const * s){
+    unsigned long int* twidth= new unsigned long int();;
+    long int* theight=new long int();
+    unsigned char** rgb=new unsigned char*[3];
+    for(unsigned i=0;i<3;i++){
+        rgb[i]=new unsigned char();
+    }
+    bool read=bmp_read ( s, twidth, theight,&rgb[0], &rgb[1], &rgb[2]);
+    if(read){
+        std::cout<<"error loading texture"<<std::endl;
+    }
+    
+    return new Material(Color(0, 0, 0), Color(0, 0, 0),
+                                        Color(0, 0, 0),
+                                        51.2,0.0,1.0,rgb,*twidth,*theight);
+}
+
+
 void init(){
     Material *gold=new Material(Color(0.3, 0.3, 0.3), Color(0.75164,0.60648,0.22648),
                                 Color(0.628281, 0.555802, 0.366065),
@@ -51,86 +135,19 @@ void init(){
                                 Color(0.316228,0.316228,0.316228),
                                 12.8,0.0,0.15,NULL,NULL,NULL);
     
-    
-    
-    unsigned long int* twidth= new unsigned long int();;
-    long int* theight=new long int();
-    //    unsigned char*** texture=new unsigned char**[3];
-    unsigned char* wave[3];
-    for(unsigned i=0;i<3;i++){
-        wave[i]=new unsigned char();
-    }
-    bool read=bmp_read ( "wave03.bmp", twidth, theight,&wave[0], &wave[1], &wave[2]);
-    if(read){
-        std::cout<<"error loading texture"<<std::endl;
-    }
-    
-    Material* waveMat=new Material(Color(0, 0, 0), Color(0.75164,0.60648,0.22648),
-                     Color(0.628281, 0.555802, 0.366065),
-                     51.2,0.0,1.0,wave,*twidth,*theight);
-    
-    
-    unsigned char* grid[3];
-    for(unsigned i=0;i<3;i++){
-        grid[i]=new unsigned char();
-    }
-    read=bmp_read ( "grid.bmp", twidth, theight,&grid[0], &grid[1], &grid[2]);
-    if(read){
-        std::cout<<"error loading texture"<<std::endl;
-    }
-    
-    Material* gridMat = new Material(Color(0, 0, 0), Color(0.75164,0.60648,0.22648),
-                     Color(0.628281, 0.555802, 0.366065),
-                     51.2,0.0,1.0,grid,*twidth,*theight);
-    
-    unsigned char* wood[3];
-    for(unsigned i=0;i<3;i++){
-        wood[i]=new unsigned char();
-    }
-    read=bmp_read ( "wood.bmp", twidth, theight,&wood[0], &wood[1], &wood[2]);
-    if(read){
-        std::cout<<"error loading texture"<<std::endl;
-    }
-    
-    Material *woodMat = new Material(Color(0, 0, 0), Color(0.75164,0.60648,0.22648),
-                     Color(0.628281, 0.555802, 0.366065),
-                     51.2,0.0,1.0,wood,*twidth,*theight);
-    
-    
-    unsigned char* aurora[3];
-    for(unsigned i=0;i<3;i++){
-        aurora[i]=new unsigned char();
-    }
-    read=bmp_read ( "aurora_texture.bmp", twidth, theight,&aurora[0], &aurora[1], &aurora[2]);
-    if(read){
-        std::cout<<"error loading texture"<<std::endl;
-    }
-    
-    Material auroraMat(Color(0, 0, 0), Color(0, 0, 0),
-                       Color(0, 0, 0),
-                       51.2,0.0,1.0,aurora,*twidth,*theight);
-    
-    unsigned char* rainbow[3];
-    for(unsigned i=0;i<3;i++){
-        rainbow[i]=new unsigned char();
-    }
-    read=bmp_read ( "rainbow.bmp", twidth, theight,&rainbow[0], &rainbow[1], &rainbow[2]);
-    if(read){
-        std::cout<<"error loading texture"<<std::endl;
-    }
-    
-    Material *rainbowMat = new Material(Color(0, 0, 0), Color(0, 0, 0),
-                        Color(0, 0, 0),
-                        51.2,0.0,1.0,rainbow,*twidth,*theight);
-    
+    Material* waveMat=createMat("wave03.bmp");
 
+    Material* gridMat =createMat("grid.bmp");
     
+    Material *woodMat =createMat("wood.bmp");
     
+    Material *auroraMat=createMat("aurora_texture.bmp");
     
+    Material *rainbowMat=createMat("rainbow.bmp");
     
     
     //load obj file here
-    std::string inputfile = "humanoid_quad.obj";
+    std::string inputfile = "David2.obj";
     tinyobj::attrib_t attrib;
     std::vector<tinyobj::shape_t> shapes;
     std::vector<tinyobj::material_t> materials;
@@ -165,31 +182,14 @@ void init(){
                     thisTri[i]=Point3D(vx,vy,vz);
                     v++;
                 }
-                SceneNode* thisT = new SceneNode(new Triangle(thisTri[0],thisTri[1],thisTri[2]),jade);
+                SceneNode* thisT = new SceneNode(new Triangle(thisTri[0],thisTri[1],thisTri[2]),jade_glossy);
                 //order:TRS
-             //   thisT->translate(Vector3D(0,-3,-5));
+                thisT->translate(Vector3D(0,-3,20));
 //                thisT->rotate('y',45);
-                //thisT->rotate('x',90);
-                double Tfactor[3] = { 0.2, 0.2, 0.2 };
+                thisT->rotate('x',-90);
+                double Tfactor[3] = { 0.07, 0.07, 0.07 };
                 thisT->scale(Point3D (0,0,0), Tfactor);
                 scene.push_back(thisT);
-                
-                
-                
-                // access to vertex
-//                tinyobj::index_t idx = shapes[s].mesh.indices[index_offset + v];
-//                tinyobj::real_t vx = attrib.vertices[3*idx.vertex_index+0];
-//                tinyobj::real_t vy = attrib.vertices[3*idx.vertex_index+1];
-//                tinyobj::real_t vz = attrib.vertices[3*idx.vertex_index+2];
-                //                tinyobj::real_t nx = attrib.normals[3*idx.normal_index+0];
-                //                tinyobj::real_t ny = attrib.normals[3*idx.normal_index+1];
-                //                tinyobj::real_t nz = attrib.normals[3*idx.normal_index+2];
-                //                tinyobj::real_t tx = attrib.texcoords[2*idx.texcoord_index+0];
-                //                tinyobj::real_t ty = attrib.texcoords[2*idx.texcoord_index+1];
-                // Optional: vertex colors
-                // tinyobj::real_t red = attrib.colors[3*idx.vertex_index+0];
-                // tinyobj::real_t green = attrib.colors[3*idx.vertex_index+1];
-                // tinyobj::real_t blue = attrib.colors[3*idx.vertex_index+2];
             }
             index_offset += fv;
             
@@ -202,15 +202,15 @@ void init(){
     //standard objects in the scene by default
     
     SceneNode* sphere = new SceneNode(new UnitSphere(), gold);
-   // scene.push_back(sphere);
+//    scene.push_back(sphere);
     SceneNode* lens = new SceneNode(new UnitSphere(), glass);
-   // scene.push_back(lens);
-    SceneNode* plane = new SceneNode(new UnitSquare(), jade);
-   // scene.push_back(plane);
+//    scene.push_back(lens);
+    SceneNode* plane = new SceneNode(new UnitSquare(), rainbowMat);
+//    scene.push_back(plane);
     
     //added a cylinder
-    SceneNode* cylinder = new SceneNode(new UnitCylinder(),gold);
-   // scene.push_back(cylinder);
+    SceneNode* cylinder = new SceneNode(new UnitCylinder(),glass);
+//    scene.push_back(cylinder);
     
     
     
@@ -225,7 +225,7 @@ void init(){
     
     
     double factor1[3] = { 1.0, 2.0, 1.0 };
-    sphere->translate(Vector3D(0, 0, -5));
+    sphere->translate(Vector3D(0, 0, 0));
     sphere->rotate('x', 0);
     sphere->rotate('z', 45);
     sphere->scale(Point3D(0, 0, 0), factor1);
@@ -233,8 +233,8 @@ void init(){
     double lensfactor[3] = { 1.0, 1.0, 1.0 };
     lens->translate(Vector3D(0, 0, -4));
     lens->scale(Point3D(0,0,0), lensfactor);
-    double factor2[3] = { 6.0, 6.0, 1.0 };
-    plane->translate(Vector3D(0, 0, -5));
+    double factor2[3] = { 100.0, 100.0, 100.0 };
+    plane->translate(Vector3D(0, 10, -50));
     //plane->rotate('z', 45);
    // plane->translate(Vector3D(0, 0, -7));
     //plane->rotate('x',180 );
@@ -316,15 +316,11 @@ Material* init_env(){
     return skyseaMat;
 }
 
-
-
-
-
-
 void hard_shadow(Raytracer& raytracer,int width,int height){
     
     // Defines a point light source.
     LightList light_list;
+//  PointLight* pLight = new PointLight(Point3D(0,0,5), Color(0.9,0.9,0.9));
     PointLight* pLight = new PointLight(Point3D(-3,-4,5), Color(0.9,0.9,0.9));
   //  PointLight* pLight = new PointLight(Point3D(-5,-5,10), Color(0.9,0.9,0.9));
     light_list.push_back(pLight);
@@ -505,8 +501,7 @@ int main(int argc, char* argv[])
         width = atoi(argv[1]);
         height = atoi(argv[2]);
     }
-   // init();
-    Material *parse = init_env();
+    init();
     clock_t timeStart = clock();
    // env_mapping(raytracer,width,height,parse);
     hard_shadow(raytracer,width,height);

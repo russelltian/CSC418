@@ -394,7 +394,9 @@ std::ostream& operator <<(std::ostream& os, const Matrix4x4& M) {
     << "[" << M[3][0] << " " << M[3][1] << " "
     << M[3][2] << " " << M[3][3] << "]";
 }
-
+Point3D operator *(double s, const Point3D& v){
+    return Point3D(s*v[0], s*v[1], s*v[2]);
+}
 
 
 
