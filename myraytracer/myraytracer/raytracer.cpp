@@ -16,35 +16,7 @@ KDNode* ROOT;
 
 bool created=false;
 void Raytracer::traverseScene(Scene& scene, Ray3D& ray)  {
-//    for (size_t i = 0; i < scene.size(); ++i) {
-//        SceneNode* node = scene[i];
-//
-//        if (node->obj->intersect(ray, node->worldToModel, node->modelToWorld)) {
-//            //if the material is transparent
-//            if(node->mat->eta>0){
-//                double eta=1.0/node->mat->eta;
-//                Point3D origin=ray.intersection.point+0.000001*ray.dir;
-//                Vector3D normal=ray.intersection.normal;
-//                normal.normalize();
-//                Vector3D in_ray=ray.dir;
-//                in_ray.normalize();
-//
-//                double c1=normal.dot(-in_ray);
-//                double c2=sqrt(1.0-eta*eta*(1.0-c1*c1));
-//                Vector3D newDir=eta*(in_ray+c1*normal)-c2*normal;
-//                newDir.normalize();
-//                Ray3D newRay(origin,newDir);
-//                traverseScene(scene, newRay);
-//                ray=newRay;
-//
-//            }else{
-//                ray.intersection.mat = node->mat;
-//                ray.intersection.none = false;
-//            }
-//        }
-//    }
     if(KDHit(ROOT,ROOT, ray)){
-//        cout<<"hits!"<<endl;
     }
 }
 
@@ -54,15 +26,17 @@ void Raytracer::computeTransforms(Scene& scene) {
     
     for (size_t i = 0; i < scene.size(); ++i) {
         SceneNode* node = scene[i];
-        
+        if(node->firstTouch){
+            node->bbox.transForm(node->trans);
+        }
         if(!node->ismesh){
             node->modelToWorld = node->trans;
             node->worldToModel = node->invtrans;
         }else if(node->firstTouch){
             node->modelToWorld = node->trans*node->modelToWorld;
             node->worldToModel = node->worldToModel*node->invtrans;
-            node->firstTouch = false;
         }
+        node->firstTouch = false;
         
     }
 }
@@ -83,9 +57,8 @@ void Raytracer::computeShading(Ray3D& ray, LightList& light_list,Scene& scene) {
             dir.normalize(); //normalization
             //shoot the ray
             inter_to_light = Ray3D(intersection, dir);
-        
             traverseScene(scene, inter_to_light);//find intersection
-        
+            
             //if intersect,compute next light, this light is not visable
             if(!inter_to_light.intersection.none) {
                 continue;
@@ -94,8 +67,8 @@ void Raytracer::computeShading(Ray3D& ray, LightList& light_list,Scene& scene) {
         }else if (light->get_type() == 1){
             //area light
             //need to approximate the light source
-            int row = 1; //how many rows of point light
-            int col = 1; //how many cols of point light
+            int row = 5; //how many rows of point light
+            int col = 5; //how many cols of point light
             for(int s = 0;s < row; s++){
                 for(int z=0;z< col; z++){
                     Point3D lightPos = light->get_many_position(s,z); //specified point light position
@@ -144,7 +117,21 @@ Color Raytracer::shadeRay(Ray3D& ray, Scene& scene, LightList& light_list,int bo
         intersect_n.normalize(); //normalize
         Vector3D intersect_r = -1*(2*(intersect_n.dot(ray.dir))*intersect_n-ray.dir);
         intersect_r.normalize();
-        
+        if(ray.intersection.mat->glossy_idx < 1){
+            Vector3D u = intersect_r.cross(intersect_n);
+            u.normalize();
+            Vector3D v = intersect_r.cross(u);
+            v.normalize();
+            //temp
+            double roughness = ray.intersection.mat->glossy_idx;
+            double theta = 2*M_PI*(random_double(0.0,1.0)*roughness);
+            double phi = 2*M_PI*(random_double(0.0,1.0)*roughness);
+            double x = sin(theta) * cos(phi);
+            double y = sin(theta) * sin(phi);
+            double z = cos(theta);
+            intersect_r = x*u + y*v + z*intersect_r;
+            intersect_r.normalize();
+        }
         Ray3D second_r;
         second_r = Ray3D(intersect_p,intersect_r); //intersection point is its origin
         bounce--; //one more reflection
@@ -155,33 +142,25 @@ Color Raytracer::shadeRay(Ray3D& ray, Scene& scene, LightList& light_list,int bo
     return col;
 }
 
-void createBoxes(Scene& scene){
-    for(int i=0;i<scene.size();i++){
-        scene[i]->bbox.transForm(scene[i]->trans);
-    }
-}
+
 
 void Raytracer::render(Camera& camera, Scene& scene, LightList& light_list, Image& image) {
-    if(created){
-        createBoxes(scene);
-        created=true;
-    }
-    
-    
-    ROOT=build(scene, 0);
     
     computeTransforms(scene);
+    ROOT=build(scene, 0);
+    
+    
     
     Matrix4x4 viewToWorld;
     double factor = (double(image.height)/2)/tan(camera.fov*M_PI/360.0);
-
+    
     viewToWorld = camera.initInvViewMatrix();
     
     //added by us to do anti-aliasing
-    int num_per_pixel_row = 1; // pow(0.5) to the num of random ray per pixel
-    
+    int num_per_pixel_row = 4; // pow(0.5) to the num of random ray per pixel
     
     // Construct a ray for each pixel.
+#pragma omp parallel for
     for (int i = 0; i < image.height; i++) {
         for (int j = 0; j < image.width; j++) {
             // Sets up ray origin and direction in view space,
@@ -190,9 +169,8 @@ void Raytracer::render(Camera& camera, Scene& scene, LightList& light_list, Imag
             //added by us, compute average pixel value (anti-aliasing)
             //initialize each pixel's color to 0
             //use Jitter Method, with simple random sample
-
+            
             Color col(0.0,0.0,0.0);
-       
             for(int k = 0; k < num_per_pixel_row; k++){
                 for(int m = 0; m < num_per_pixel_row; m++){
                     Point3D origin(0, 0, 0);
@@ -205,8 +183,8 @@ void Raytracer::render(Camera& camera, Scene& scene, LightList& light_list, Imag
                     imagePlane[0] = (-double(image.width)/2 + location_x + j)/factor;
                     imagePlane[1] = (-double(image.height)/2 + location_y + i)/factor;
                     imagePlane[2] = -1;
-                
-                
+                    
+                    
                     Ray3D ray;
                     //Convert ray to world space
                     //Ray Direction
@@ -217,7 +195,7 @@ void Raytracer::render(Camera& camera, Scene& scene, LightList& light_list, Imag
                     origin = viewToWorld * origin;
                     //construct the ray
                     ray = Ray3D(origin,dir);
-                
+                    
                     int depth = 1; //define depth for reflection, we compute one reflection
                     int count = 0;//counter to calculate light decay
                     col = col + shadeRay(ray, scene, light_list,depth,count); //sum up color, include depth
@@ -230,20 +208,15 @@ void Raytracer::render(Camera& camera, Scene& scene, LightList& light_list, Imag
             image.setColorAtPixel(i, j, col);
         }
     }
-    cout << numRaySquareTests <<endl;
-
 }
 
 //added to do depth of field render
 //we give the camera a thin lens instead of a pin hole
 void Raytracer::render_dof(Camera& camera, Scene& scene, LightList& light_list, Image& image, double focus_index) {
-    if(created){
-        createBoxes(scene);
-        created=true;
-    }
+    
     
     computeTransforms(scene);
-    
+    ROOT=build(scene, 0);
     Matrix4x4 viewToWorld;
     double factor = (double(image.height)/2)/tan(camera.fov*M_PI/360.0);
     
@@ -251,7 +224,7 @@ void Raytracer::render_dof(Camera& camera, Scene& scene, LightList& light_list, 
     
     //in DoF, we are averaging the color, so we do not use anti-aliasing,
     //otherwise the algo would be O(N^4), now is O(N^3)
-    double interval = 0.03; // lens postion interval
+    double interval = 0.015; // lens postion interval
     double low_high = 0.03; //lower and upper bound
     // Construct a ray for each pixel.
     for (int i = 0; i < image.height; i++) {
@@ -268,7 +241,6 @@ void Raytracer::render_dof(Camera& camera, Scene& scene, LightList& light_list, 
             imagePlane[0] = (-double(image.width)/2 + 0.5 + j)/factor;
             imagePlane[1] = (-double(image.height)/2 + 0.5 + i)/factor;
             imagePlane[2] = -1;
-            
             
             //use secondary ray to compute depth of field
             //first give primary ray a direction and focus point
@@ -297,7 +269,7 @@ void Raytracer::render_dof(Camera& camera, Scene& scene, LightList& light_list, 
             int num_per_lens = floor((2*low_high)/interval)+1;//computation per row per pixel
             num_per_lens = pow(num_per_lens,2);             //computation per pixel
             Color lens_scale(1.0/num_per_lens,1.0/num_per_lens,1.0/num_per_lens);
-            col = lens_scale * col; 
+            col = lens_scale * col;
             image.setColorAtPixel(i, j, col);
         }
     }
@@ -308,6 +280,7 @@ void Raytracer::render_dof(Camera& camera, Scene& scene, LightList& light_list, 
 void Raytracer::render_env(Camera& camera, Scene& scene, LightList& light_list, Image& image,Material*Mat) {
     
     computeTransforms(scene);
+    ROOT=build(scene, 0);
     Matrix4x4 viewToWorld;
     double factor = (double(image.height)/2)/tan(camera.fov*M_PI/360.0);
     viewToWorld = camera.initInvViewMatrix();
@@ -316,7 +289,7 @@ void Raytracer::render_env(Camera& camera, Scene& scene, LightList& light_list, 
     // Construct a ray for each pixel.
     for (int i = 0; i < image.height; i++) {
         for (int j = 0; j < image.width; j++) {
-
+            
             Color col(0.0,0.0,0.0);
             
             for(int k = 0; k < num_per_pixel_row; k++){
@@ -359,7 +332,7 @@ void Raytracer::render_env(Camera& camera, Scene& scene, LightList& light_list, 
 Color Raytracer::shadeRay_Env(Ray3D& ray, Scene& scene, LightList& light_list,Material*Mat) {
     Color col(0.0, 0.0, 0.0);
     traverseScene(scene, ray);
-
+    
     //if intersection, compute the color at that intersection
     if(ray.intersection.none ){
         Shade_Env(ray,Mat);//(ray,light_list,scene);
@@ -377,7 +350,7 @@ Color Raytracer::shadeRay_Env(Ray3D& ray, Scene& scene, LightList& light_list,Ma
         
         Ray3D second_r;
         second_r = Ray3D(intersect_p,intersect_r); //intersection point is its origin
-
+        
         //recursive call, count is used for decide scale factor to the light
         col = col + shadeRay_Env(second_r, scene, light_list,Mat);
         col.clamp();
@@ -402,8 +375,8 @@ void Shade_Env(Ray3D& ray,Material*Mat){
     double maxAxis = 0.0;
     // positive x
     if(is_x_pos && absX >= absY && absX >= absZ){
-    // u (0 to 1) goes from +z to -z
-    // v (0 to 1) goes from -y to +y
+        // u (0 to 1) goes from +z to -z
+        // v (0 to 1) goes from -y to +y
         maxAxis = absX;
         uc = -z;
         vc = y;
@@ -454,16 +427,16 @@ void Shade_Env(Ray3D& ray,Material*Mat){
         vc = y;
         index = 5;
     }
-
+    
     //convert range from -1 to 1 to 0 to 1
     u = 0.5f * (uc / maxAxis + 1.0f);
     v = 0.5f * (vc / maxAxis + 1.0f);
-//    if(u != 0 && v != 0 && index == 0)
-//    printf("%d,%f, %f \n",index,u,v);
+    //    if(u != 0 && v != 0 && index == 0)
+    //    printf("%d,%f, %f \n",index,u,v);
     unsigned char** texture=Mat->texture;
-//    texture[0] = Mat->texture[0];
-//    texture[1] = Mat->texture[1];
-//    texture[2] = Mat->texture[2];
+    //    texture[0] = Mat->texture[0];
+    //    texture[1] = Mat->texture[1];
+    //    texture[2] = Mat->texture[2];
     int height=int(Mat->theight);
     int width=int(Mat->twidth);
     int tx = width/4;
@@ -474,36 +447,36 @@ void Shade_Env(Ray3D& ray,Material*Mat){
     switch (index)
     {
         case 0: pos_x = (2*tx + u*tx);
-                pos_y = (ty + v*ty);
-                break;
+            pos_y = (ty + v*ty);
+            break;
         case 1: pos_x = (u*tx);
-                pos_y = (ty + v*ty);
+            pos_y = (ty + v*ty);
             
-                break;
+            break;
         case 2: pos_x = (tx + u*tx) ;
-                pos_y = (2*ty + v * ty);
-           
-                break;
+            pos_y = (2*ty + v * ty);
+            
+            break;
         case 3: pos_x = (tx + u*tx );
-                pos_y = (v * ty);
-                break;
+            pos_y = (v * ty);
+            break;
         case 4: pos_x =( tx + u*tx) ;
-                pos_y = (ty + v * ty);
-                break;
+            pos_y = (ty + v * ty);
+            break;
         case 5: pos_x = (3*tx + u*tx);
-                pos_y = (ty + v * ty);
-                break;
+            pos_y = (ty + v * ty);
+            break;
     }
     //tIndex= (pos_y*width+pos_x);
     tIndex= (pos_y)*width + pos_x;
-  //  tIndex = 12186642  -100;
+    //  tIndex = 12186642  -100;
     //tIndex = 12186642+3;
     if(texture[0] /*&& (index == 2 || index == 4 || index == 3 )*/){
         Color texColor(texture[0][tIndex]/255.0,texture[1][tIndex]/255.0,texture[2][tIndex]/255.0);
         ray.col = texColor;
-//        if (texColor[0] == 1.0){
-//            cout << pos_x << " "<<pos_y<<endl;
-//            ray.col[0] = 0;
-//        }
+        //        if (texColor[0] == 1.0){
+        //            cout << pos_x << " "<<pos_y<<endl;
+        //            ray.col[0] = 0;
+        //        }
     }
 }

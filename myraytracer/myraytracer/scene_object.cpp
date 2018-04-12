@@ -27,11 +27,7 @@ bool UnitSquare::intersect(Ray3D& ray, const Matrix4x4& worldToModel,
     //transform the ray(origin,direction) to object space
     Point3D origin = worldToModel * ray.origin;
     Vector3D direction = worldToModel * ray.dir;
-    // direction.normalize();
     double t = -origin[2]/direction[2];
-    
-    //added by us, to optimize structure
-    __sync_fetch_and_add(&numRaySquareTests, 1);
     
     //invalid intersection
     if(t <= 0.0000000001 || direction[2] == 0||(!ray.intersection.none&&t>ray.intersection.t_value)){
@@ -76,8 +72,6 @@ bool UnitSphere::intersect(Ray3D& ray, const Matrix4x4& worldToModel,
     t=-temp-sqrt(temp*temp-originV.length()*originV.length()+1);
     //invalid intersection
     
-    
-    
     if(!exist||(!ray.intersection.none&&t>ray.intersection.t_value)){
         return false;
     }else if(t<-0.00000001){
@@ -86,12 +80,8 @@ bool UnitSphere::intersect(Ray3D& ray, const Matrix4x4& worldToModel,
     
     Point3D p = origin + t*direction;
     Vector3D normal = Vector3D(p[0],p[1],p[2]);
-    
-    
-    
-    
     normal.normalize();
-    double u=atan2(normal[3],normal[0])/(2*PI);
+    double u=atan2(normal[2],normal[0])/(2*PI);
     double v=-asin(normal[1])/PI;
     
     //    std::cout<<"u: "<<u<<" v "<<v<<std::endl;
@@ -148,7 +138,6 @@ bool UnitCylinder::intersect(Ray3D& ray, const Matrix4x4& worldToModel,const Mat
             ray.intersection.normal = transNorm(worldToModel, normal);
             ray.intersection.none = false;
             return_true = true;
-            
         }
     }
     // the near cap
@@ -256,114 +245,6 @@ bool UnitCylinder::intersect(Ray3D& ray, const Matrix4x4& worldToModel,const Mat
     return return_true;
 }
 
-
-//added to compute triangle intersection, to find mesh
-//referenced online algorithm
-bool UnitTriangle::intersect(Ray3D& ray, const Matrix4x4& worldToModel,
-                             const Matrix4x4& modelToWorld) {
-    //transform to object space
-    Point3D origin = worldToModel * ray.origin;
-    Vector3D direction = worldToModel * ray.dir;
-    direction.normalize();
-    double threshold = 0.00000001;
-    //points
-    Vector3D p1(-0.75983,-0.658035,0);//left
-    Vector3D p2(0,0.658035,0);//up
-    Vector3D p3(0.75983,-0.658035,0);//right
-    Vector3D e1 = p2 - p1;
-    Vector3D e2 = p3 - p1;
-    
-    Vector3D pvec = direction.cross(e2);
-    double det = e1.dot(pvec);
-    
-    
-    if(det < threshold && det > -threshold) return false;
-    double invDet = 1/det;
-    Vector3D ori_vec(origin[0],origin[1],origin[2]);
-    // Vector3D ori_vec(0,0,0);
-    Vector3D tvec = ori_vec - p1;
-    //  tvec.normalize();
-    double u = tvec.dot(pvec)*invDet;
-    if(u < 0 || u > 1)return false;
-    Vector3D qvec = tvec.cross(e1);
-    //  qvec.normalize();
-    double v = invDet*direction.dot(qvec);
-    
-    // std::cout <<v <<" "<<u <<std::endl;
-    
-    if(v< 0 || u+v > 1)return false;
-    
-    
-    double t0 = e2.dot(qvec)*invDet;
-    if(t0 < threshold) return false;
-    Point3D p(origin + t0*direction);
-    Vector3D normal(0,0,1);
-    if(normal.dot(direction)>threshold)normal = Vector3D(0,0,-1);
-    // std::cout << modelToWorld*p <<normal<<std::endl;
-    normal.normalize();
-    
-    
-    ray.intersection.localPos = Point3D(u,v,0);
-    ray.intersection.t_value =t0;
-    ray.intersection.point = modelToWorld*p;
-    ray.intersection.normal = transNorm(worldToModel, normal);
-    ray.intersection.normal.normalize();
-    return true;
-    //    if(y0<-1){
-    //        if (y1<-1) return false;
-    //        else
-    //        {   // hit the top cap
-    //            double th = t0 + (t1-t0) * (y0+1) / (y0-y1);
-    //            if (th<=0) return false;
-    //            Point3D p(origin + (th*direction));
-    //            Vector3D normal(0,-1,0);
-    //            ray.intersection.localPos = p;
-    //            ray.intersection.t_value = th;
-    //            ray.intersection.point = modelToWorld*p;
-    //            ray.intersection.normal = transNorm(worldToModel, normal);
-    //            return true;
-    //
-    //        }
-    //    }
-    //    else if (y0>=-1 && y0<=1)
-    //    {
-    //        // hit the cylinder bit
-    //        if (t0<=0) return false;
-    //        Point3D p(origin + (t0*direction));
-    //        ray.intersection.localPos = p;
-    //        ray.intersection.point = modelToWorld*p;
-    //        ray.intersection.t_value = t0;
-    //        Vector3D normal(p[0],0,p[2]);
-    //        ray.intersection.normal = normal;
-    //        ray.intersection.normal.normalize();
-    //        ray.intersection.normal = transNorm(worldToModel, normal);
-    //        return true;
-    //    }
-    //    else if (y0>1)
-    //    {
-    //        if (y1>1)
-    //            return false;
-    //        else
-    //        {
-    //            // hit the bottom cap
-    //            float th = t0 + (t1-t0) * (y0-1) / (y0-y1);
-    //            if (th<=0) return false;
-    //            Point3D p(origin + (th*direction));
-    //            ray.intersection.localPos = p;
-    //            ray.intersection.point = modelToWorld*p;
-    //            ray.intersection.t_value = th;
-    //            Vector3D normal(0,1,0);
-    //            ray.intersection.normal = transNorm(worldToModel, normal);
-    //            return true;
-    //        }
-    //    }
-    //    return false;
-}
-
-
-
-
-
 void SceneNode::rotate(char axis, double angle) {
     Matrix4x4 rotation;
     double toRadian = 2*M_PI/360.0;
@@ -451,8 +332,6 @@ bool Triangle::intersect(Ray3D& ray, const Matrix4x4& worldToModel,
         return false;
     }
     
-    
-    
     double u=origin[0]+t*direction[0];
     double v=origin[1]+t*direction[1];
     Vector3D normal(0,0,1);
@@ -467,9 +346,6 @@ bool Triangle::intersect(Ray3D& ray, const Matrix4x4& worldToModel,
     }else{
         return false;
     }
-    
-    
-    
 }
 
 Triangle::Triangle(Point3D origin,Point3D iu, Point3D iv){
@@ -479,6 +355,7 @@ Triangle::Triangle(Point3D origin,Point3D iu, Point3D iv){
 }
 
 SceneNode::SceneNode(Triangle* obj, Material* mat){
+    this->firstTouch=true;
     this->obj=obj;
     this->mat=mat;
     this->ismesh=true;
@@ -789,6 +666,18 @@ bool KDHit(KDNode* node,KDNode* root, Ray3D& ray){
 }
 
 SceneNode::SceneNode(UnitSphere* inobj, Material* mat){
+    this->firstTouch=true;
+    this->obj=inobj;
+    this->mat=mat;
+    this->ismesh=false;
+    
+    this->bbox.a=Point3D(-1,-1,-1);
+    this->bbox.b=Point3D(1,1,1);;
+    this->bbox.updateLongestAxis();
+}
+
+SceneNode::SceneNode(UnitCube* inobj, Material* mat){
+    this->firstTouch=true;
     this->obj=inobj;
     this->mat=mat;
     this->ismesh=false;
@@ -799,6 +688,7 @@ SceneNode::SceneNode(UnitSphere* inobj, Material* mat){
 }
 
 SceneNode::SceneNode(UnitSquare* inobj, Material* mat){
+    this->firstTouch=true;
     this->obj=inobj;
     this->mat=mat;
     this->ismesh=false;
@@ -808,6 +698,7 @@ SceneNode::SceneNode(UnitSquare* inobj, Material* mat){
 }
 
 SceneNode::SceneNode(UnitCylinder* inobj, Material* mat){
+    this->firstTouch=true;
     this->obj=inobj;
     this->mat=mat;
     this->ismesh=false;
@@ -821,7 +712,7 @@ bool UnitCube::intersect(Ray3D &ray, const Matrix4x4 &worldToModel, const Matrix
     Vector3D direction = worldToModel * ray.dir;
     // direction.normalize();
     double threshold = 0.00000001;
-    int side = -1; // first hit side,0,1,2 for x,y,z
+    int side = -1; // first side being hit, 0,1,2 for x,y,z
     double xmax = 0.5; double xmin = -0.5;
     double ymax = 0.5; double ymin = -0.5;
     double zmax = 0.5; double zmin = -0.5;
@@ -830,20 +721,79 @@ bool UnitCube::intersect(Ray3D &ray, const Matrix4x4 &worldToModel, const Matrix
     
     double tmin = min(tx1, tx2);
     double tmax = max(tx1, tx2);
-    
+    side = 0;//x plane is the first hit
+    // cout << "hit x first ";
     double ty1 = (ymin - origin[1])*(1.0/direction[1]);
     double ty2 = (ymax - origin[1])*(1.0/direction[1]);
-    
     tmin = max(tmin, min(ty1, ty2));
     tmax = min(tmax, max(ty1, ty2));
-    
+    if(tmin ==  min(ty1,ty2)) {
+        side = 1;
+        // cout << "hit y first ";
+    }
     double tz1 = (zmin - origin[2])*(1.0/direction[2]);
     double tz2 = (zmax - origin[2])*(1.0/direction[2]);
-    
     tmin = max(tmin, min(tz1, tz2));
     tmax = min(tmax, max(tz1, tz2));
-    
+    if(tmin == min(tz1,tz2)){
+        side = 2; //first hit z plane
+        //  cout << "hit z first\n";
+    }
+    if(tmax < threshold)return false;
     if(tmax < tmin)return false;
-    return false;
+    if(tmin > threshold){
+        double u,v;
+        double uc = 0.0; double vc = 0.0;
+        double maxAxis = 0.0;
+        double x = direction[0];
+        double y = direction[1];
+        double z = direction[2];
+        double absX = fabs(x);
+        double absY = fabs(y);
+        double absZ = fabs(z);
+        Point3D p(origin + tmin*direction);
+        Vector3D normal;
+        if(side == 0){
+            normal = Vector3D(1,0,0);
+            maxAxis = absX;
+            uc = -z;
+            vc = y;
+            //check normal direction
+            if(direction.dot(normal) > 0){
+                normal = -normal;
+                uc = z;
+            }
+        }else if(side == 1){
+            normal = Vector3D(0,1,0);
+            maxAxis = absY;
+            uc = x;
+            vc = -z;
+            //check normal direction
+            if(direction.dot(normal) > 0){
+                normal = -normal;
+                vc = z;
+            }
+        }else if(side == 2){
+            normal = Vector3D(0,0,1);
+            maxAxis = absZ;
+            uc = x;
+            vc = y;
+            
+            //check normal direction
+            if(direction.dot(normal) > 0){
+                normal = -normal;
+                uc = -x;
+            }
+        }
+        u = 0.5f * (uc / maxAxis + 1.0f);
+        v = 0.5f * (vc / maxAxis + 1.0f);
+        
+        ray.intersection.localPos = p;
+        ray.intersection.t_value =tmin;
+        ray.intersection.point = modelToWorld*p;
+        ray.intersection.normal = transNorm(worldToModel, normal);
+    }
+    return true;
 }
+
 

@@ -10,7 +10,6 @@
 
 #include "util.h"
 #include <vector>
-static uint64_t numRaySquareTests = 0;
 using namespace std;
 
 
@@ -18,7 +17,7 @@ class Triangle;
 class UnitCylinder;
 class UnitSquare;
 class UnitSphere;
-
+class UnitCube;
 // All primitives should provide an intersection function.
 // To create more primitives, inherit from SceneObject.
 // Namely, you can create, Sphere, Cylinder, etc... classes
@@ -138,6 +137,8 @@ struct SceneNode {
     
     SceneNode(UnitSquare* inobj, Material* mat);
     
+    SceneNode(UnitCube* inobj, Material* mat);
+    
     SceneNode(UnitCylinder* inobj, Material* mat);
     
     
@@ -218,11 +219,7 @@ public:
 };
 
 
-class UnitTriangle: public SceneObject{
-public:
-    bool intersect(Ray3D& ray, const Matrix4x4& worldToModel,
-                   const Matrix4x4& modelToWorld);
-};
+
 
 class UnitCube: public SceneObject{
 public:
