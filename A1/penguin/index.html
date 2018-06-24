@@ -1,0 +1,37 @@
+<!-- You do not need to modify this file. -->
+
+<!DOCTYPE html>
+<html>
+  <head>
+	<meta charset="UTF-8">
+    <link rel="stylesheet" href="style.css">
+    <script src="a1.js"></script>
+  </head>
+  <body onload="draw();">
+    <h1>
+      Assignment #1: Interactive 2D Penguin
+    </h1>
+
+    <table>
+      <tr>
+        <td>
+          <canvas id="canvas" width="720" height="720">Your browser is too old! Please upgrade to a <a href='https://developer.mozilla.org/en-US/docs/Web/HTML/Element/canvas#Browser_compatibility'><em>canvas</em>-capable browser</a>.</canvas>
+        </td>
+        <td>
+          <table>
+            <tr><td>Torso <i>x</i>-position: </td><td><input type="range" min="-100" max="100" value="0" class="slider" id="slider_torso_x" oninput="draw();" /> </td></tr>
+            <tr><td>Torso <i>y</i>-position:</td><td><input type="range" min="-100" max="100" value="0" class="slider" id="slider_torso_y" oninput="draw();" /> </td></tr>
+            <tr><td>Arm angle:</td><td><input type="range" min="-60" max="60" value="0" class="slider" id="slider_arm_angle" oninput="draw();" /> </td></tr>
+            <tr><td>Head angle:</td><td><input type="range" min="-20" max="20" value="0" class="slider" id="slider_head_angle" oninput="draw();" /> </td></tr>
+            <tr><td>Mouth gap:</td><td><input type="range" min="-10" max="7" value="0" class="slider" id="slider_mouth_gap" oninput="draw();" /> </td></tr>
+            <tr><td>Hip angle[0]:</td><td><input type="range" min="-45" max="45" value="0" class="slider"  id="slider_hip_angle0" oninput="draw();" /> </td></tr>
+            <tr><td>Ankle angle[0]:</td><td><input type="range" min="-10" max="30" value="0" class="slider"  id="slider_ankle_angle0" oninput="draw();" /> </td></tr>
+            <tr><td>Hip angle[1]:</td><td><input type="range" min="-45" max="45" value="-2" class="slider" id="slider_hip_angle1" oninput="draw();" /> </td></tr>
+            <tr><td>Ankle angle[1]:</td><td><input type="range" min="-10" max="30" value="4" class="slider" id="slider_ankle_angle1" oninput="draw();" /> </td></tr>
+          </table>
+        </td>
+      </tr>
+    </table>
+  </body>
+</html>
+

@@ -1,0 +1,109 @@
+html
+{
+  margin: 0px;
+  padding: 0px;
+  background-color: #bbb;
+  font-weight: 300;
+  height: 100%;
+}
+
+body
+{
+  font-size: 10pt;
+  background-color: #fff;
+  margin:0px auto;
+  text-align: justify;
+  font-family: "HelveticaNeue-Light", "Helvetica Neue Light", "Helvetica Neue", Helvetica, Arial, "Lucida Grande", sans-serif; 
+  width: 1024px;
+  padding-top: 10px;
+  padding-bottom: 10px;
+  padding-right: 10px;
+  padding-left: 10px;
+  min-height: 100%;
+  border-left: 1px solid #888;
+  border-right: 1px solid #888;
+}
+
+pre, code {
+  font-size: 0.85em;
+  font-family: Consolas, Inconsolata, Courier, monospace;
+}
+
+code {
+  margin: 0 0.15em;
+  padding: 0 0.3em;
+  border: 1px solid #EAEAEA;
+  background-color: #F8F8F8;
+  border-radius: 3px;
+  display: inline; /* added to fix Yahoo block display of inline code */
+}
+
+pre {
+  font-size: 1em;
+  line-height: 1.2em;
+}
+
+pre code {
+  white-space: pre;
+  overflow: auto; /* fixes issue #70: Firefox/Thunderbird: Code blocks with horizontal scroll would have bad background colour */
+  border-radius: 3px;
+  border: 1px solid #CCC;
+  padding: 0.5em 0.7em;
+  display: block !important; /* added to counteract the Yahoo-specific `code` rule; without this, code blocks in Blogger are broken */
+}
+
+/* This spacing has been tweaked to closely match Gmail+Chrome "paragraph" (two line breaks) spacing. */
+body p {
+  /* !important is needed here because Hotmail/Outlook.com uses !important to
+     kill the margin in <p>. We need this to win. */
+  margin: 1.2em 0 !important;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  margin: 1.3em 0 1em;
+  padding: 0;
+  font-weight: bold;
+  font-family: "HelveticaNeue-Light", "Helvetica Neue Light", "Helvetica Neue", Helvetica, Arial, "Lucida Grande", sans-serif; 
+}
+
+h1 {
+  font-size: 1.6em;
+  border-bottom: 1px solid #ddd;
+}
+
+hr {
+  border: none;
+  height: 1px;
+  background-color: #ddd;
+}
+
+h2 {
+  font-size: 1.25em;
+  border-bottom: 1px solid #eee;
+}
+
+h3 {
+  font-size: 1.15em;
+}
+
+h4 {
+  font-size: 1.75em;
+}
+
+h5 {
+  font-size: 1em;
+}
+
+h6 {
+  font-size: 1em;
+  color: #777;
+}
+
+table
+{
+  text-align: right;
+}
+table tr td
+{
+  vertical-align: top;
+}
