@@ -967,8 +967,8 @@ int main(int argc, char* argv[])
     LightList light_list;
     
     //    //2K
-    int width = 1920;
-    int height = 1080;
+//    int width = 1920;
+//    int height = 1080;
     //    int width = 2480;
     //   int height = 1748;
     //    int width = 1440;
@@ -979,8 +979,8 @@ int main(int argc, char* argv[])
     
     //        int width = 3200;
     //        int height = 2400;
-    //    int width = 320;
-    //    int height =240;
+        int width = 320;
+        int height =240;
     if (argc == 3) {
         width = atoi(argv[1]);
         height = atoi(argv[2]);
@@ -994,8 +994,8 @@ int main(int argc, char* argv[])
     // object_init2();
     //  init_texture();
     //  init_refraction();
-    //  default_init();
-    //  init_cyl();
+    //default_init();
+      init_cyl();
     //  init_glossy();
     Material *parse = init_env();
     
@@ -1003,13 +1003,13 @@ int main(int argc, char* argv[])
     
     
     clock_t timeStart = clock();
-     env_mapping(raytracer,width,height,parse);
+     //env_mapping(raytracer,width,height,parse);
     
     
     //Please use hard_shadow_for_obj for mesh demo
    // hard_shadow_for_obj(raytracer,width,height);
     
-    //  soft_shadow(raytracer,width,height);
+    soft_shadow(raytracer,width,height);
     //hard_shadow(raytracer,width,height);
     //  DOF((raytracer,width,height);
     clock_t timeEnd = clock();

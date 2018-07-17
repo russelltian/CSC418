@@ -45,6 +45,6 @@ class Raytracer {
 };
 
 
-double random_double(double fMin, double fMax);
-void Shade_Env(Ray3D& ray,Material*Mat);
+double random_double(double fMin, double fMax); //return a random number between fMin and fMax
+void Shade_Env(Ray3D& ray,Material*Mat); // render the image for environemnt mapping
 

@@ -21,6 +21,7 @@ class LightSource {
     virtual ~LightSource() {}
    
     //our new function
+    //the value will not be zero for area light
     virtual int get_type() const = 0; //added to return type of light
     virtual Point3D get_many_position(int i,int j) const =0; //used for area light to get uniform distribution
 };
@@ -45,19 +46,17 @@ class PointLight : public LightSource {
     Point3D get_position() const { return pos; }
     
     //our functions
-    int get_type() const{return type;}
-    Point3D get_many_position(int i,int j) const { return pos; }//no need in pointlight
+    int get_type() const{return type;} //point light: 0
+    Point3D get_many_position(int i,int j) const { return pos; }//no need in pointlight, only one position
     private:
     Point3D pos;
     Color col_ambient;
     Color col_diffuse;
     Color col_specular;
-    
-    int type;//equals to 0, area light
+    int type;//equals to 0, point light
 };
 
 //added by us, area lightsource to produce softshadow
-
 class AreaLight : public LightSource {
 public:
     // add length and width to make it as a square
