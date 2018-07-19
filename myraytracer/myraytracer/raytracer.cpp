@@ -67,8 +67,8 @@ void Raytracer::computeShading(Ray3D& ray, LightList& light_list,Scene& scene) {
         }else if (light->get_type() == 1){
             //area light
             //need to approximate the light source
-            int row = 5; //how many rows of point light
-            int col = 5; //how many cols of point light
+            int row = 3; //how many rows of point light
+            int col = 3; //how many cols of point light
             for(int s = 0;s < row; s++){
                 for(int z=0;z< col; z++){
                     Point3D lightPos = light->get_many_position(s,z); //specified point light position
@@ -118,6 +118,7 @@ Color Raytracer::shadeRay(Ray3D& ray, Scene& scene, LightList& light_list,int bo
         Vector3D intersect_r = -1*(2*(intersect_n.dot(ray.dir))*intersect_n-ray.dir);
         intersect_r.normalize();
         if(ray.intersection.mat->glossy_idx < 1){
+            //glossy effect
             Vector3D u = intersect_r.cross(intersect_n);
             u.normalize();
             Vector3D v = intersect_r.cross(u);

@@ -17,7 +17,7 @@ class Raytracer {
     // Renders 3D scene to an image given camera and lights setup.
     void render(Camera& camera, Scene& scene, LightList& light_list, Image& image);
     
-    //added, DoF render
+    //added, Depth of Field render
     void render_dof(Camera& camera, Scene& scene, LightList& light_list, Image& image,double
                     focuspoint);
     
