@@ -45,6 +45,6 @@ class Raytracer {
 };
 
 
-double random_double(double fMin, double fMax); //return a random number between fMin and fMax
+double random_double(double fMin, double fMax); //return a random number between fMin and fMax, I put this function in light_source.cpp.. can't remember the reason
 void Shade_Env(Ray3D& ray,Material*Mat); // render the image for environemnt mapping
 

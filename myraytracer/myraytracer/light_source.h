@@ -41,7 +41,7 @@ class PointLight : public LightSource {
     :
     pos(pos), col_ambient(ambient), col_diffuse(diffuse), col_specular(specular) {type = 0;}
     
-    void shade(Ray3D& ray);
+    void shade(Ray3D& ray); //compute color
     
     Point3D get_position() const { return pos; }
     

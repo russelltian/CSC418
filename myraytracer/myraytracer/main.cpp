@@ -979,8 +979,8 @@ int main(int argc, char* argv[])
     
     //        int width = 3200;
     //        int height = 2400;
-        int width = 320;
-        int height =240;
+        int width = 640;
+        int height =480;
     if (argc == 3) {
         width = atoi(argv[1]);
         height = atoi(argv[2]);
@@ -1009,8 +1009,8 @@ int main(int argc, char* argv[])
     //Please use hard_shadow_for_obj for mesh demo
    // hard_shadow_for_obj(raytracer,width,height);
     
-    soft_shadow(raytracer,width,height);
-    //hard_shadow(raytracer,width,height);
+    //soft_shadow(raytracer,width,height);
+    hard_shadow(raytracer,width,height);
     //  DOF((raytracer,width,height);
     clock_t timeEnd = clock();
     printf("render time: %04.2f (sec)\n",(double)(timeEnd - timeStart) / CLOCKS_PER_SEC);//print run time

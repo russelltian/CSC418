@@ -35,6 +35,7 @@ void PointLight::shade(Ray3D& ray) {
     normal.normalize();
     
     //find intersection material color term
+    //confuse about this part now...
     Point3D localpos=ray.intersection.localPos;
     int x=3*(localpos[0]+0.5)*255;
     x%=255;
@@ -55,7 +56,7 @@ void PointLight::shade(Ray3D& ray) {
     Color diffuse = mat->diffuse;           //diffuse color
     Color ambient = mat->ambient;           //ambient color
     Color specular = mat->specular;         //specular color
-    double specular_term = mat->specular_exp;   //specular exp
+    double specular_term = mat->specular_exp;   //specular exp for specular color
     
     //if use texture mapping
     if(texture[0]){
@@ -71,7 +72,6 @@ void PointLight::shade(Ray3D& ray) {
     
     
     //calculate diffuse color
-    //    Color diff=fmax(normal.dot(inci_ray),0.0)*diffuse;
     Color diff=abs(normal.dot(inci_ray))*diffuse;
     
     //find reflection ray equals to 2(R.N)N - L
@@ -80,11 +80,12 @@ void PointLight::shade(Ray3D& ray) {
     
     Vector3D V=-ray.dir;  //view vector
     if(ray.intersection.mat->glossy_idx < 1){
+        //glossy effect
         Vector3D u = ref_ray.cross(normal);
         u.normalize();
         Vector3D v = ref_ray.cross(u);
         v.normalize();
-        //temp
+        //from ray-tracing tutorial slide 2
         double roughness = ray.intersection.mat->glossy_idx;
         double theta = 2*M_PI*(random_double(0.0,1.0)*roughness);
         double phi = 2*M_PI*(random_double(0.0,1.0)*roughness);
@@ -95,25 +96,18 @@ void PointLight::shade(Ray3D& ray) {
         ref_ray.normalize();
     }
     
-    
-    
-    
-    // Color ref=powf(fmax(ref_ray.dot(V),0.0),specular_term)*specular;
     Color ref = fmax(0.0,powf(ref_ray.dot(V),specular_term))*specular; // specular color
-    
     
     // final color should also times the light color
     // for example, if light is red, only red should be left
     Color out=ambient*this->col_ambient+diff*this->col_diffuse+ref*this->col_specular;
     out.clamp();
-    
     ray.col = ray.col + out;
 }
 
 // acturally identical with pointlight::shade, since it's an approximation of
 // multiple point lights
 void AreaLight::shade(Ray3D& ray){
-    
     //we need to have incident light, reflect light, and normal vector
     //incident light
     Vector3D inci_ray = this->pos - ray.intersection.point; //light pos - intersection pos
@@ -123,18 +117,12 @@ void AreaLight::shade(Ray3D& ray){
     Vector3D normal = ray.intersection.normal;
     normal.normalize();
     
-    //find intersection material color term
+    //find intersection material color term,confuse about this term
     Point3D localpos=ray.intersection.localPos;
+    Material* mat = ray.intersection.mat; //material
     
-    
-    
-    
-    
-    Material* mat = ray.intersection.mat;
-    
-    
-    int height=int(mat->theight);
-    int width=int(mat->twidth);
+    int height=int(mat->theight); //height of light
+    int width=int(mat->twidth); //width of light
     
     int x=(localpos[0]+0.5)*(width-1);
     x%=(width-1);
@@ -177,6 +165,7 @@ void AreaLight::shade(Ray3D& ray){
     Vector3D V=-ray.dir;  //view vector
     
     if(ray.intersection.mat->glossy_idx < 1){
+        //glossy effect
         Vector3D u = ref_ray.cross(normal);
         u.normalize();
         Vector3D v = ref_ray.cross(u);
