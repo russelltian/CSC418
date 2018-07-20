@@ -280,47 +280,20 @@ void object_init2(){
     plane->translate(Vector3D(0,-2,0));
 }
 
+//texture mapping
 void init_texture(){
-    Material* gold = new Material(Color(0.3, 0.3, 0.3), Color(0.75164,0.60648,0.22648),
-                                  Color(0.628281, 0.555802, 0.366065),
-                                  51.2,0.0,1.0,NULL,NULL,NULL);
-    Material *ranColor=new Material(Color(0.3, 0.3, 0.3), Color(0.7,0.7,0.7),
+
+    Material *white=new Material(Color(0.3, 0.3, 0.3), Color(0.7,0.7,0.7),
                                     Color(0.628281, 0.555802, 0.366065),
                                     36,0.0,1.0,NULL,NULL,NULL);
+
     
-    Material *red = new Material(Color(0.1, 0.1, 0.1), Color(0.690196,0.090196,0.121569),
-                                 Color(0.628281, 0.555802, 0.366065),
-                                 12.8,0.0,1.0,NULL,NULL,NULL);
-    
-    Material *red_g = new Material(Color(0.1, 0.1, 0.1), Color(0.690196,0.090196,0.121569),
-                                   Color(0.628281, 0.555802, 0.366065),
-                                   12.8,0.0,0.05,NULL,NULL,NULL);
-    
-    
-    Material *blue = new Material(Color(0, 0, 0),                                  Color(0, 0, 0.8),
-                                  Color(0.690196,0.316228,0.121569),
-                                  51.2,0.0,1.0,NULL,NULL,NULL);
-    
-    Material* yellow = new Material(Color(0.3, 0.3, 0.3), Color(1, 0.6, 0.070),
-                                    Color(0.628281, 0.555802, 0.366065),
-                                    36,0.0,1.0,NULL,NULL,NULL);
-    Material* yellow_g = new Material(Color(0.3, 0.3, 0.3), Color(1, 0.6, 0.070),
-                                      Color(0.628281, 0.555802, 0.366065),
-                                      36,0.0,0.1,NULL,NULL,NULL);
-    Material* green = new Material(Color(0.3, 0.3, 0.3), Color(0, 0.8, 0),
-                                   Color(0.628281, 0.555802, 0.366065),
-                                   36,0.0,1.0,NULL,NULL,NULL);
-    Material *glass = new Material(Color(0.3, 0.3, 0.3), Color(0.75164,0.60648,0.22648),
-                                   Color(0.316228,0.316228,0.316228),
-                                   12.8,1.1,1.0,NULL,NULL,NULL);
-    
-    Material* gridMat=createMat("Textures/grid.bmp");
     Material *woodMat =createMat("Textures/wood.bmp");
     Material *rainBowMat =createMat("Textures/rainbow.bmp");
     Material *auroraMat =createMat("Textures/aurora_texture.bmp");
     Material *waveMat =createMat("Textures/wave03.bmp");
     // Add a unit square into the scene with material mat.
-    SceneNode* cylinder = new SceneNode(new UnitCylinder(), ranColor);
+    SceneNode* cylinder = new SceneNode(new UnitCylinder(), white);
     scene.push_back(cylinder);
     
     SceneNode* plane = new SceneNode(new UnitSquare(), woodMat);
@@ -331,13 +304,13 @@ void init_texture(){
     scene.push_back(box);
     
     
-    SceneNode* cylinder2 = new SceneNode(new UnitCylinder(), ranColor);
+    SceneNode* cylinder2 = new SceneNode(new UnitCylinder(), white);
     scene.push_back(cylinder2);
-    SceneNode* cylinder3 = new SceneNode(new UnitCylinder(), ranColor);
+    SceneNode* cylinder3 = new SceneNode(new UnitCylinder(), white);
     scene.push_back(cylinder3);
     SceneNode* sphere = new SceneNode(new UnitSphere(), woodMat);
     scene.push_back(sphere);
-    SceneNode* sphere2 = new SceneNode(new UnitSphere(), gridMat);
+    SceneNode* sphere2 = new SceneNode(new UnitSphere(), auroraMat);
     scene.push_back(sphere2);
     SceneNode* sphere3 = new SceneNode(new UnitSphere(), waveMat);
     scene.push_back(sphere3);
@@ -992,12 +965,12 @@ int main(int argc, char* argv[])
     //init();
    // object_init();
     // object_init2();
-    //  init_texture();
+    init_texture();
     //  init_refraction();
     //default_init();
-      init_cyl();
+    //  init_cyl();
     //  init_glossy();
-    Material *parse = init_env();
+    //Material *parse = init_env();
     
     
     
@@ -1007,7 +980,7 @@ int main(int argc, char* argv[])
     
     
     //Please use hard_shadow_for_obj for mesh demo
-   // hard_shadow_for_obj(raytracer,width,height);
+    //hard_shadow_for_obj(raytracer,width,height);
     
     //soft_shadow(raytracer,width,height);
     hard_shadow(raytracer,width,height);
