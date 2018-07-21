@@ -287,18 +287,19 @@ void init_texture(){
                                     Color(0.628281, 0.555802, 0.366065),
                                     36,0.0,1.0,NULL,NULL,NULL);
 
-    
     Material *woodMat =createMat("Textures/wood.bmp");
     Material *rainBowMat =createMat("Textures/rainbow.bmp");
     Material *auroraMat =createMat("Textures/aurora_texture.bmp");
     Material *waveMat =createMat("Textures/wave03.bmp");
+    Material *seaMat =createMat("Textures/sea.bmp");
+
     // Add a unit square into the scene with material mat.
     SceneNode* cylinder = new SceneNode(new UnitCylinder(), white);
     scene.push_back(cylinder);
     
     SceneNode* plane = new SceneNode(new UnitSquare(), woodMat);
     scene.push_back(plane);
-    SceneNode* plane1 = new SceneNode(new UnitSquare(), rainBowMat);
+    SceneNode* plane1 = new SceneNode(new UnitSquare(), seaMat);
     scene.push_back(plane1);
     SceneNode* box = new SceneNode(new UnitCube(), auroraMat);
     scene.push_back(box);
@@ -590,6 +591,7 @@ void init(){
     //    cylinder->scale(Point3D(0,0,0), cyl_factor);
     
 }
+
 
 void hard_shadow(Raytracer& raytracer,int width,int height){
     
@@ -929,6 +931,77 @@ void init_glossy(){
     sphere3->translate(Vector3D(3, 2, -6));
     
 }
+
+//added for chamber scene
+void chamber_hard_shadow(Raytracer& raytracer,int width,int height){
+    //define the point light
+    LightList light_list;
+    PointLight* pLight = new PointLight(Point3D(0,2,-1.5), Color(0.6,0.6,0.6));
+    light_list.push_back(pLight);
+    
+    //render the scene
+    Camera camera1(Point3D(0, 0, 1), Vector3D(0, 0, -1), Vector3D(0, 1, 0), 60.0);
+    Image image1(width, height);
+    raytracer.render(camera1, scene, light_list, image1); //render 3D scene to image
+    image1.flushPixelBuffer("view1.bmp"); //save rendered image to file
+    cout << "finished View1" << endl;
+    // Render it from a different point of view.
+    Camera camera2(Point3D(4, 2, 1), Vector3D(-4, -2, -6), Vector3D(0, 1, 0), 60.0);
+    //        Camera camera2(Point3D(0, -3, 3), Vector3D(0, 3, -3), Vector3D(0, 1, 0), 60.0);
+    //  Camera camera2(Point3D(0, -10, 3), Vector3D(0, 10, -3), Vector3D(0, 1, 0), 60.0);
+    Image image2(width, height);
+    raytracer.render(camera2, scene, light_list, image2);
+    image2.flushPixelBuffer("view2.bmp");
+    cout << "finished View2" << endl;
+    // Free memory
+    for (size_t i = 0; i < scene.size(); ++i) {
+        delete scene[i];
+    }
+    
+    for (size_t i = 0; i < light_list.size(); ++i) {
+        delete light_list[i];
+    }
+}
+
+//new addition, mimic the simple sample picutre on lecture slide
+void init_chamber_simple(){
+    Material *red = new Material(Color(0.1, 0.1, 0.1), Color(0.901961,0.239216,0.239216),Color(0.628281, 0.555802, 0.366065),12.8,0.0,1.0,NULL,NULL,NULL);
+    Material* green = new Material(Color(0.3, 0.3, 0.3), Color(0.325490, 0.819608, 0.2),Color(0.628281, 0.555802, 0.366065),36,0.0,1.0,NULL,NULL,NULL);
+    Material* rice = new Material(Color(0.3, 0.3, 0.3), Color(1.0, 1.0, 0.6),Color(0.628281, 0.555802, 0.366065),36,0.0,1.0,NULL,NULL,NULL);
+    //left wall, mid up down walls, right wall
+    SceneNode* left_wall = new SceneNode(new UnitSquare(), red);
+    scene.push_back(left_wall);
+    SceneNode* right_wall = new SceneNode(new UnitSquare(), green);
+    scene.push_back(right_wall);
+    SceneNode* mid_wall = new SceneNode(new UnitSquare(), rice);
+    scene.push_back(mid_wall);
+    SceneNode* up_wall = new SceneNode(new UnitSquare(), rice);
+    scene.push_back(up_wall);
+    SceneNode* down_wall = new SceneNode(new UnitSquare(), rice);
+    scene.push_back(down_wall);
+    //two box
+    SceneNode* box1 = new SceneNode(new UnitCube(),rice);
+    scene.push_back(box1);
+    SceneNode* box2 = new SceneNode(new UnitCube(),rice);
+    scene.push_back(box2);
+    left_wall->translate(Vector3D(1,0,-3));
+    right_wall->translate(Vector3D(-1,0,-3));
+    up_wall->translate(Vector3D(0,1,-3));
+    down_wall->translate(Vector3D(0,-1,-3));
+    mid_wall->translate(Vector3D(0,0,-3));
+
+    box1->translate(Vector3D(0,-1,-2));
+    box2->translate(Vector3D(-2,-1,-2));
+    //left,right rotate at y-axis
+    left_wall->rotate('y', 90);
+    right_wall->rotate('y', 90);
+    //up,bottom rotate at x-axis
+    up_wall->rotate('x',90);
+    down_wall->rotate('x',90);
+    
+  
+    
+}
 int main(int argc, char* argv[])
 {
     // Build your scene and setup your camera here, by calling
@@ -965,7 +1038,7 @@ int main(int argc, char* argv[])
     //init();
    // object_init();
     // object_init2();
-    init_texture();
+    //init_texture();
     //  init_refraction();
     //default_init();
     //  init_cyl();
@@ -974,7 +1047,7 @@ int main(int argc, char* argv[])
     
     
     
-    
+    init_chamber_simple();
     clock_t timeStart = clock();
      //env_mapping(raytracer,width,height,parse);
     
@@ -983,8 +1056,9 @@ int main(int argc, char* argv[])
     //hard_shadow_for_obj(raytracer,width,height);
     
     //soft_shadow(raytracer,width,height);
-    hard_shadow(raytracer,width,height);
+    //hard_shadow(raytracer,width,height);
     //  DOF((raytracer,width,height);
+    chamber_hard_shadow(raytracer,width,height);
     clock_t timeEnd = clock();
     printf("render time: %04.2f (sec)\n",(double)(timeEnd - timeStart) / CLOCKS_PER_SEC);//print run time
     return 0;
